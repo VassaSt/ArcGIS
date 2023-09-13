@@ -1,0 +1,10 @@
+//  creation ui for data item
+  // <div class="layer-list">
+  // <button id="btn" class="layer-list__item">
+  //     <div class="item-title__wrap">
+  //       <div class="item-marker"></div>
+  //       <div class="item-title" id="layer-name"></div>
+  //     </div>
+  //     <div class="item-eye"></div>
+  //   </button>
+  // </div>
