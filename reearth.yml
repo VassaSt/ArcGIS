@@ -39,8 +39,12 @@ extensions:
             type: string
             title: Data Type
             choices:
+              - key: default
+                label: Choose type
               - key: point
                 label: Point
+              - key: icon
+                label: Icon
               - key: line
                 label: Line
               - key: polygon
@@ -49,58 +53,45 @@ extensions:
                 label: kml
               - key: czml
                 label: czml
-            defaultValue: point
-          - id: symbol_type
-            type: string
-            title: Symbol
-            defaultValue: color
-            choices:
-              - key: color
-                label: Color
-              - key: icon
-                label: Icon
+            defaultValue: default
           - id: point_color
             type: string
             title: Point color
             ui: color
             availableIf:
-              field: symbol_type
+              field: data_type
               type: string
-              value: color
+              value: point
           - id: point_size
             type: number
             title: Point size
             suffix: px
             availableIf:
-              field: symbol_type
+              field: data_type
               type: string
-              value: color
+              value: point
           - id: point_outline_color
             type: string
             title: Point outline color
             ui: color
             availableIf:
-              field: symbol_type
+              field: data_type
               type: string
-              value: color
-            availableIf:
-              field: symbol_type
-              type: string
-              value: color
+              value: point
           - id: point_outline_width
             type: number
             title: Point outline width
             suffix: px
             availableIf:
-              field: symbol_type
+              field: data_type
               type: string
-              value: color
+              value: point
           - id: image_URL
             type: url
             title: Image URL
             ui: image
             availableIf:
-              field: symbol_type
+              field: data_type
               type: string
               value: icon
           - id: image_size
@@ -108,7 +99,7 @@ extensions:
             title: Image size
             suffix: px
             availableIf:
-              field: symbol_type
+              field: data_type
               type: string
               value: icon           
           - id: line_color
