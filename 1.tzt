@@ -8,3 +8,59 @@
   //     <div class="item-eye"></div>
   //   </button>
   // </div>
+
+
+
+
+
+        buttons = document.querySelectorAll('.item-eye');
+        // console.log("buttons : ", buttons);
+
+    let buttonPressed = e => {
+
+      // let layer_id = this.getAttribute('value');
+  // console.log("layer_id: ", layer_id);
+  // reearth.layers.layers;
+  // if (this.classList.contains('item-eye')){
+  //   reearth.layers.hide(layer_id);
+
+  //   this.classList.remove('item-eye');
+  //   this.classList.add('item-eye__closed');
+  // } else {
+  //   reearth.layers.show(layer_id);
+
+  //   this.classList.remove('item-eye__closed');
+  //   this.classList.add('item-eye');
+  // }
+
+
+      // Get ID of Clicked Element
+      let layer_id = e.target.parentElement.id;
+      console.log(layer_id);
+      console.log(e.target);
+
+    //   // getting properties from selected option 
+    //   function onChange() {
+    //     var imageUrl = markersList.options[markersList.selectedIndex].value;
+    //     var imageSize = markersList.options[markersList.selectedIndex].getAttribute('imageSize');
+    //     let imageSizeToNumber = +imageSize;
+
+    //     reearth.layers.overrideProperty((markerId), {
+    //       default: {
+    //         image: imageUrl,
+    //         imageSize: imageSizeToNumber,
+    //       }
+    //     });
+
+      // }
+      // markersList.onchange = onChange;
+      // onChange();
+
+    }
+    for (let button of buttons) {
+      button.addEventListener("click", buttonPressed);
+    }
+
+
+            // document.getElementById(itemTitle__wrapID).addEventListener('click', download);
+        // document.getElementById(itemEyeID).addEventListener('click', handleLayer);

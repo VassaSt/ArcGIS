@@ -94,6 +94,7 @@ reearth.ui.show(`
     padding: 8px 60% 8px 8px;
     background: inherit;
     border: none;
+    cursor: pointer;
   }
 
   .item-marker {
@@ -107,29 +108,25 @@ reearth.ui.show(`
   .item-eye {
     width: 20px;
     height: 20px;
+    border: none;
+    padding: 16px 16px;
+    -webkit-transition-duration: 0.2s;
+    -o-transition-duration: 0.2s;
+    transition-duration: 0.2s;
+    cursor: pointer;
+  }
+
+  ._show {
     background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 17 17" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M0.633488 7.23029C0.361227 7.65186 0.17435 7.98409 0.0747807 8.18322C-0.0249269 8.38264 -0.0249269 8.61736 0.0747807 8.81678C0.17435 9.01591 0.361227 9.34814 0.633488 9.76971C1.0841 10.4674 1.6158 11.1647 2.22804 11.8178C4.01009 13.7187 6.10597 14.875 8.5 14.875C10.894 14.875 12.9899 13.7187 14.772 11.8178C15.3842 11.1647 15.9159 10.4674 16.3665 9.76971C16.6388 9.34814 16.8256 9.01591 16.9252 8.81678C17.0249 8.61736 17.0249 8.38264 16.9252 8.18322C16.8256 7.98409 16.6388 7.65186 16.3665 7.23029C15.9159 6.53257 15.3842 5.83526 14.772 5.18221C12.9899 3.28135 10.894 2.125 8.5 2.125C6.10597 2.125 4.01009 3.28135 2.22804 5.18221C1.6158 5.83526 1.0841 6.53257 0.633488 7.23029ZM3.26159 10.8489C2.71171 10.2623 2.23071 9.63152 1.82358 9.00113C1.70803 8.8222 1.60554 8.65415 1.51638 8.5C1.60554 8.34584 1.70803 8.1778 1.82358 7.99887C2.23071 7.36848 2.71171 6.73765 3.26159 6.15112C4.79984 4.51032 6.55552 3.54167 8.50004 3.54167C10.4446 3.54167 12.2002 4.51032 13.7385 6.15112C14.2884 6.73765 14.7694 7.36848 15.1765 7.99887C15.2921 8.1778 15.3945 8.34584 15.4837 8.5C15.3945 8.65415 15.2921 8.8222 15.1765 9.00113C14.7694 9.63152 14.2884 10.2623 13.7385 10.8489C12.2002 12.4897 10.4446 13.4583 8.50004 13.4583C6.55552 13.4583 4.79984 12.4897 3.26159 10.8489ZM8.5 11.3333C6.93519 11.3333 5.66667 10.0648 5.66667 8.5C5.66667 6.93519 6.93519 5.66667 8.5 5.66667C10.0648 5.66667 11.3333 6.93519 11.3333 8.5C11.3333 10.0648 10.0648 11.3333 8.5 11.3333ZM9.91667 8.5C9.91667 9.2824 9.2824 9.91667 8.5 9.91667C7.7176 9.91667 7.08333 9.2824 7.08333 8.5C7.08333 7.7176 7.7176 7.08333 8.5 7.08333C9.2824 7.08333 9.91667 7.7176 9.91667 8.5Z" fill="%23141414"/></svg>');
     background-repeat: no-repeat;
     background-position: center center;
-    border: none;
-    padding: 16px 16px;
-    -webkit-transition-duration: 0.2s;
-    -o-transition-duration: 0.2s;
-    transition-duration: 0.2s;
   }
 
-  .item-eye__closed {
-    width: 20px;
-    height: 20px;
+  ._hide {
     background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M3.04565 3.98846L0.195262 1.13807C-0.0650873 0.877722 -0.0650873 0.455612 0.195262 0.195262C0.455612 -0.0650874 0.877722 -0.0650874 1.13807 0.195262L4.50362 3.56081C4.50847 3.56552 4.51327 3.57032 4.51801 3.5752L7.05546 6.11265C7.05701 6.11418 7.05855 6.11573 7.06009 6.11728L9.88281 8.94C9.8843 8.94148 9.88579 8.94297 9.88727 8.94446L12.4236 11.4808C12.4285 11.4855 12.4333 11.4903 12.438 11.4952L15.8047 14.8619C16.0651 15.1223 16.0651 15.5444 15.8047 15.8047C15.5444 16.0651 15.1223 16.0651 14.8619 15.8047L11.884 12.8269C10.7307 13.569 9.3885 13.9774 8 14C5.7468 14 3.77421 12.9117 2.09698 11.1226C1.52075 10.508 1.02033 9.8517 0.596224 9.19502C0.339978 8.79825 0.164094 8.48557 0.0703819 8.29814C-0.0264925 8.10439 -0.023193 7.87566 0.0792296 7.68478C0.83357 6.279 1.8398 5.02644 3.04565 3.98846ZM3.9914 4.93421C2.96687 5.80092 2.09956 6.83879 1.42837 8.00213C1.512 8.14663 1.60805 8.30407 1.71628 8.47165C2.09946 9.06496 2.55217 9.65868 3.06969 10.2107C4.51746 11.755 6.16987 12.6667 7.9891 12.6668C9.02133 12.6499 10.0276 12.3692 10.9143 11.8571L9.36655 10.3094C8.75636 10.6918 8.00709 10.8167 7.29027 10.6336C6.34544 10.3923 5.60766 9.65456 5.36637 8.70973C5.18331 7.99291 5.30817 7.24364 5.69064 6.63345L3.9914 4.93421ZM6.68526 7.62807C6.60569 7.86671 6.59375 8.12728 6.65824 8.37981C6.77889 8.85223 7.14778 9.22111 7.62019 9.34176C7.87272 9.40625 8.1333 9.39431 8.37193 9.31474L6.68526 7.62807ZM13.4641 10.6368C13.1824 10.3997 13.1462 9.97916 13.3832 9.69744C13.8293 9.16735 14.2271 8.59877 14.572 7.9985C14.4883 7.85382 14.3921 7.69617 14.2837 7.52835C13.9005 6.93504 13.4478 6.34132 12.9303 5.78929C11.4825 4.24501 9.83013 3.33333 7.99843 3.33333C7.57882 3.33235 7.16051 3.38015 6.75194 3.47579C6.39344 3.5597 6.03479 3.33711 5.95088 2.97861C5.86696 2.62011 6.08956 2.26146 6.44806 2.17755C6.95726 2.05835 7.4786 1.99877 8 2C10.2532 2 12.2258 3.08833 13.903 4.87737C14.4792 5.49201 14.9797 6.1483 15.4038 6.80498C15.66 7.20175 15.8359 7.51443 15.9296 7.70186C16.0263 7.89527 16.0232 8.12357 15.9213 8.31428C15.4947 9.11227 14.986 9.86355 14.4034 10.5559C14.1664 10.8376 13.7458 10.8738 13.4641 10.6368Z" fill="%23C7C5C5"/></svg>');
     background-repeat: no-repeat;
     background-position: center center;
-    border: none;
-    padding: 16px 16px;
-    -webkit-transition-duration: 0.2s;
-    -o-transition-duration: 0.2s;
-    transition-duration: 0.2s;
   }
-
 </style>
 <div id="wrapper">
   <div class="title">
@@ -137,7 +134,9 @@ reearth.ui.show(`
     <div class="close"></div>
   </div>
   <p class="layer-title">Layers: </p>
+  <input type="hidden" id="data-store"/>
   <div id="layer-list" class="layer-list">
+
   </div>
   <script src='https://unpkg.com/@turf/turf@6/turf.min.js'></script>
   <script>
@@ -145,6 +144,7 @@ reearth.ui.show(`
     let property;
     let layers;
     let newProperty;
+    // let layerList = document.getElementById("layer-list");
     let itemTitle__wrapID = "itemTitleWrap_ID__";
     let itemEyeID = "itemEye_ID__";
 
@@ -218,8 +218,31 @@ reearth.ui.show(`
       }
       //  ./getToken
 
-      let dataList = files.data_list;
-      console.log("dataList: ", dataList);
+    //   function saveSymbolList(data) {
+    //   let symbolList = [];
+    //   symbolList.push({
+    //     id: "point",
+    //     type: "point",
+    //     name: "Point",
+    //     url: "point",
+    //     scale: 1
+    //   });
+      
+    //   data?.map((item) => {
+    //     symbolList.push({
+    //       id: item.id,
+    //       type: item.modelOptions || "model",
+    //       name: item.modelName,
+    //       url: item.modelUrl,
+    //       scale: item.scale || 1
+    //     });
+    //   });
+
+    //   //Save symbol list
+    //   getElmById("symbolList").setAttribute("data-symbol-list", JSON.stringify(symbolList));
+    // }
+      
+
 
       document.getElementById("layer-list").remove();
       let layerList = document.createElement('div');
@@ -227,36 +250,45 @@ reearth.ui.show(`
       layerList.id = "layer-list";
       document.getElementById('wrapper').appendChild(layerList);
 
+      let dataList = files.data_list;
+      console.log("dataList: ", dataList);
+      
       i = 0;
+
+      let dataStore = [];
 
       //   console.log("dataItem: ", dataItem);
 
       dataList.forEach(dataItem => {
 
+        if(dataItem.layer_name && dataItem.symbol_ID){
+        i++
+
         let layerName = dataItem.layer_name;
         let itemID = dataItem.symbol_ID;
         // console.log(itemID);
-       
+
         let layerList__item = document.createElement('div');
         layerList__item.classList.add('layer-list__item');
 
         let itemTitle__wrap = document.createElement('button');
         itemTitle__wrap.classList.add('item-title__wrap');
-        itemTitle__wrapID = itemTitle__wrapID + i++;
-        itemTitle__wrap.id = itemTitle__wrapID;
-        itemTitle__wrap.setAttribute('item-ID', itemID);
+        // itemTitle__wrapID = itemTitle__wrapID + i;
+        itemTitle__wrap.id = itemID;
+
 
         let itemMarker = document.createElement('div');
         itemMarker.classList.add('item-marker');
 
         let itemTitle = document.createElement('div');
         itemTitle.classList.add('item-title');
-        itemTitle.id = "itemTitle" + i++;
+        itemTitle.id = "itemTitle__" + i;
         itemTitle.textContent = layerName;
 
         let itemEye = document.createElement('button');
         itemEye.classList.add('item-eye');
-        itemEyeID = itemEyeID + i++;
+        itemEye.classList.add('_show');
+        itemEyeID = itemEyeID + i;
         itemEye.id = itemEyeID;
 
 
@@ -265,13 +297,19 @@ reearth.ui.show(`
         itemTitle__wrap.appendChild(itemMarker);
         itemTitle__wrap.appendChild(itemTitle);
         layerList__item.appendChild(itemEye);
+      }
 
+      let found = dataStore.some(obj => obj.itemId == itemID)
+      if(!found){
+        dataStore.push({itemId: itemID, layerId: "",})
+      }
 
+    console.log("1", dataStore);
+    document.getElementById('data-store').setAttribute('data-store', JSON.stringify(dataStore));
+    console.log("2", dataStore);
 
-        document.getElementById(itemTitle__wrapID).addEventListener('click', download);
-        document.getElementById(itemEyeID).addEventListener('click', handleLayer);
-
-        function download() {
+        function download(btn_id) {
+          let itemID = btn_id;
           let currentTime = new Date();
           let timeDiff = (currentTime.getTime() - startTime.getTime()) / 1000;
           if (timeDiff > expireIn) {
@@ -296,7 +334,7 @@ reearth.ui.show(`
               console.log("geojsonData: ", geojsonData);
               let center = turf.center(geojsonData)
               // parent.postMessage({type: "showGeojson", data: geojsonData, center}, "*")
-              showGeojson(geojsonData, center)
+              showGeojson(geojsonData, center, btn_id)
             } else {
               //Show error
               if (data.errorType == "Function.ResponseSizeTooLarge") {
@@ -308,77 +346,113 @@ reearth.ui.show(`
           });
         }
         //  ./download
-      });
-    };
-    //  ./handleData
 
-    let geojsonLayerId
-    function showGeojson(geojsonData, center) {
-      // if (geojsonLayerId) {
-        // console.log("geojsonLayerId: ", geojsonLayerId);
-        // refresh
-        // reearth.layers.overrideProperty(geojsonLayerId, {
-        //   default: {
-        //     url: [],
-        //   },
-        // });
+        download_btns = document.querySelectorAll('.item-title__wrap');
+        // console.log("download_btns: ", download_btns);
 
-        // // override
-        // reearth.layers.overrideProperty(geojsonLayerId, {
-        //   default: {
-        //     url: geojsonData,
-        //   },
-        // });
-      // } else {
-        geojsonLayerId = reearth.layers.add({
-          extensionId: "resource",
-          isVisible: true,
-          title: "geojson-data",
-          property: {
-            default: {
-              url: geojsonData,
-              type: "geojson",
-              clampToGround: true
-            },
-          },
-        })
+        let buttonPressed = e => {
+          var isButton = e.target.tagName;
 
-       document.getElementById(itemEyeID).setAttribute('value', geojsonLayerId);
-        console.log("value: ", document.getElementById(itemEyeID).getAttribute('value'));
-      // }
+          if (isButton === "BUTTON") {
+            let btn_id = e.target.id;
+            console.log(btn_id);
+            download(btn_id);
+          } else {
+            let btn_id = e.target.parentElement.closest('button').id;
+            console.log(btn_id);
+            download(btn_id);
+          }
+        }
 
-      reearth.camera.flyTo({
-        lat: center.geometry.coordinates[1],
-        lng: center.geometry.coordinates[0],
-        height: 50000
-      }, {
-        duration: 2
+        for (let download_btn of download_btns) {
+          download_btn.addEventListener("click", buttonPressed);
+        }
+
+        // hide and show layers
+        eye_btns = document.querySelectorAll('.item-eye');
+
+        let handleLayer = e => {
+          let layer_id = e.target.parentElement.id;
+          reearth.layers.layers;
+
+          var btnClass = e.target.classList;
+          // console.log(btnClass);
+
+          if (btnClass.contains('_show')) {
+            reearth.layers.hide(layer_id);
+
+            btnClass.remove('_show');
+            btnClass.add('_hide');
+          } else {
+            reearth.layers.show(layer_id);
+
+            btnClass.remove('_hide');
+            btnClass.add('_show');
+          }
+
+        }
+
+        for (let eye_btn of eye_btns) {
+          eye_btn.addEventListener("click", handleLayer);
+        }
       });
     }
+      //  ./handleData
+
+
+
+
+      let geojsonLayerId
+      function showGeojson(geojsonData, center, btn_id) {
+        if (!document.getElementById(btn_id).parentElement.hasAttribute('id')) {
+          geojsonLayerId = reearth.layers.add({
+            extensionId: "resource",
+            isVisible: true,
+            title: "geojson-data",
+            property: {
+              default: {
+                url: geojsonData,
+                type: "geojson",
+                clampToGround: true
+              },
+            },
+          })
+
+          reearth.camera.flyTo({
+            lat: center.geometry.coordinates[1],
+            lng: center.geometry.coordinates[0],
+            height: 50000
+          }, {
+            duration: 2
+          });
+
+          document.getElementById(btn_id).parentElement.setAttribute('id', geojsonLayerId);
+          // let test = document.getElementById(btn_id).parentElement.id;
+        } else {
+          console.log("has id");
+          // // refresh
+          // reearth.layers.overrideProperty(geojsonLayerId, {
+          //   default: {
+          //     url: [],
+          //   },
+          // });
+
+          // // override
+          // reearth.layers.overrideProperty(geojsonLayerId, {
+          //   default: {
+          //     url: geojsonData,
+          //   },
+          // });
+          reearth.camera.flyTo({
+            lat: center.geometry.coordinates[1],
+            lng: center.geometry.coordinates[0],
+            height: 50000
+          }, {
+            duration: 2
+          });
+        }
+      }
     //  ./showGeojson
-
-
-
-
-function handleLayer() {
-  let layer_id = this.getAttribute('value');
-  // console.log("layer_id: ", layer_id);
-  reearth.layers.layers;
-  if (this.classList.contains('item-eye')){
-    reearth.layers.hide(layer_id);
-
-    this.classList.remove('item-eye');
-    this.classList.add('item-eye__closed');
-  } else {
-    reearth.layers.show(layer_id);
-
-    this.classList.remove('item-eye__closed');
-    this.classList.add('item-eye');
-  }
-
-
-}
-//   ./handleLayer
   </script>
   `);
 
