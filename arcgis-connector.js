@@ -154,6 +154,11 @@ reearth.ui.show(`
     // const expireIn = 7000;
     const expireIn = 60;
 
+    let dataStore = [];
+    dataStore.push({
+      itemId: "",
+      layerId: "",
+    })
 
     //   copy from right side panel menu 
     // let client_id = 'mkE152IGDlgiIG3S'
@@ -255,8 +260,6 @@ reearth.ui.show(`
       
       i = 0;
 
-      let dataStore = [];
-
       //   console.log("dataItem: ", dataItem);
 
       dataList.forEach(dataItem => {
@@ -297,16 +300,16 @@ reearth.ui.show(`
         itemTitle__wrap.appendChild(itemMarker);
         itemTitle__wrap.appendChild(itemTitle);
         layerList__item.appendChild(itemEye);
+
+        let found = dataStore.some(obj => obj.itemId == itemID)
+            if(!found){
+              dataStore.push({itemId: itemID, layerId: "",})
+            }
+    
+            console.log("1", dataStore);
+            document.getElementById('data-store').setAttribute('data-store', JSON.stringify(dataStore));
       }
 
-      let found = dataStore.some(obj => obj.itemId == itemID)
-      if(!found){
-        dataStore.push({itemId: itemID, layerId: "",})
-      }
-
-    console.log("1", dataStore);
-    document.getElementById('data-store').setAttribute('data-store', JSON.stringify(dataStore));
-    console.log("2", dataStore);
 
         function download(btn_id) {
           let itemID = btn_id;
@@ -356,6 +359,7 @@ reearth.ui.show(`
           if (isButton === "BUTTON") {
             let btn_id = e.target.id;
             console.log(btn_id);
+
             download(btn_id);
           } else {
             let btn_id = e.target.parentElement.closest('button').id;
@@ -395,7 +399,9 @@ reearth.ui.show(`
         for (let eye_btn of eye_btns) {
           eye_btn.addEventListener("click", handleLayer);
         }
+
       });
+      //   ./forEach
     }
       //  ./handleData
 
@@ -425,6 +431,13 @@ reearth.ui.show(`
           }, {
             duration: 2
           });
+
+
+          let found = dataStore.some(obj => obj.itemId == btn_id)
+          if(found){
+// find this [i] with this obj
+          }
+          console.log(dataStore);
 
           document.getElementById(btn_id).parentElement.setAttribute('id', geojsonLayerId);
           // let test = document.getElementById(btn_id).parentElement.id;
