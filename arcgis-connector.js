@@ -134,7 +134,7 @@ reearth.ui.show(`
     <div class="close"></div>
   </div>
   <p class="layer-title">Layers: </p>
-  <input type="hidden" id="data-store"/>
+  <input type="hidden" id="data-store" />
   <div id="layer-list" class="layer-list">
 
   </div>
@@ -145,7 +145,6 @@ reearth.ui.show(`
     let layers;
     let newProperty;
     // let layerList = document.getElementById("layer-list");
-    let itemTitle__wrapID = "itemTitleWrap_ID__";
     let itemEyeID = "itemEye_ID__";
 
     let startTime = new Date();
@@ -159,6 +158,8 @@ reearth.ui.show(`
       itemId: "",
       layerId: "",
     })
+
+    let dataProperties;
 
     //   copy from right side panel menu 
     // let client_id = 'mkE152IGDlgiIG3S'
@@ -180,16 +181,51 @@ reearth.ui.show(`
       // getting data from widget
       if (JSON.stringify(property) != JSON.stringify(newProperty)) {
         property = newProperty;
-        let clientData = property;
-        handleData(clientData);
+        handleData(property);
       }
-    })
+    });
 
 
+    // getting properties from widget and override them
+    // function overrideProperties(dataItem) {
+    //   let dataType = dataItem.data_type;
+    //   let result;
+    //   switch (dataType) {
+    //     case 'point':
+    //       // console.log(dataItem.point_color, dataItem.point_size, dataItem.point_outline_color, dataItem.point_outline_width);
+    //       result = ({"color": dataItem.point_color || "yellow", "pointSize": dataItem.point_size || "1", "stroke": dataItem.point_outline_color || "yellow", " stroke-width": dataItem.point_outline_width || "1"});
+    //       break
 
+    //     case 'icon':
+    //       console.log(dataItem.image_URL, dataItem.image_size);
+    //       break
+
+    //     case 'line':
+    //       // console.log(dataItem.line_color, dataItem.line_width);
+    //       result = ({"stroke": dataItem.line_color || "yellow", "stroke-width": dataItem.line_width || "1"});
+    //       break
+
+    //     case 'polygon':
+    //       // console.log(dataItem.polygon_color, dataItem.outline_color, dataItem.outline_width);
+    //       result = ({"fillColor": dataItem.polygon_color || "yellow", "stroke": dataItem.outline_color || "yellow", "stroke-width": dataItem.outline_width || "1"} );
+    //       break
+
+    //     case 'kml':
+    //       console.log("kml");
+    //       break
+
+    //     case 'czml':
+    //       console.log("czml");
+    //       break
+    //   }
+    //   // dataProperties.push(result);
+    //   // JSON.stringify(dataProperties);
+    //   // dataStore.push(result);
+    //   return result;
+    // }
 
     function handleData(files) {
-      console.log("files: ", files)
+      // console.log("files: ", files)
       let API_URL = files.client_data.URL;
       let client_id = files.client_data.client_ID;
       let client_secret = files.client_data.client_secret;
@@ -197,7 +233,7 @@ reearth.ui.show(`
 
       let TokenURL = 'https://www.arcgis.com/sharing/rest/oauth2/token'
       let token_url = TokenURL + "?client_id=" + client_id + "&grant_type=client_credentials&client_secret=" + client_secret;
-      console.log("token_url: ", token_url);
+      // console.log("token_url: ", token_url);
       let token = "";
       let param = {
         'Accept': 'application/json',
@@ -223,31 +259,6 @@ reearth.ui.show(`
       }
       //  ./getToken
 
-    //   function saveSymbolList(data) {
-    //   let symbolList = [];
-    //   symbolList.push({
-    //     id: "point",
-    //     type: "point",
-    //     name: "Point",
-    //     url: "point",
-    //     scale: 1
-    //   });
-      
-    //   data?.map((item) => {
-    //     symbolList.push({
-    //       id: item.id,
-    //       type: item.modelOptions || "model",
-    //       name: item.modelName,
-    //       url: item.modelUrl,
-    //       scale: item.scale || 1
-    //     });
-    //   });
-
-    //   //Save symbol list
-    //   getElmById("symbolList").setAttribute("data-symbol-list", JSON.stringify(symbolList));
-    // }
-      
-
 
       document.getElementById("layer-list").remove();
       let layerList = document.createElement('div');
@@ -256,60 +267,119 @@ reearth.ui.show(`
       document.getElementById('wrapper').appendChild(layerList);
 
       let dataList = files.data_list;
-      console.log("dataList: ", dataList);
-      
+      // console.log("dataList: ", dataList);
+
       i = 0;
 
       //   console.log("dataItem: ", dataItem);
+      // console.log("dataType: ", dataType);
+
 
       dataList.forEach(dataItem => {
 
-        if(dataItem.layer_name && dataItem.symbol_ID){
-        i++
+        if (dataItem.layer_name && dataItem.symbol_ID) {
+          i++
 
-        let layerName = dataItem.layer_name;
-        let itemID = dataItem.symbol_ID;
-        // console.log(itemID);
+          let layerName = dataItem.layer_name;
+          let itemID = dataItem.symbol_ID;
+          // console.log(itemID);
 
-        let layerList__item = document.createElement('div');
-        layerList__item.classList.add('layer-list__item');
+          let layerList__item = document.createElement('div');
+          layerList__item.classList.add('layer-list__item');
 
-        let itemTitle__wrap = document.createElement('button');
-        itemTitle__wrap.classList.add('item-title__wrap');
-        // itemTitle__wrapID = itemTitle__wrapID + i;
-        itemTitle__wrap.id = itemID;
-
-
-        let itemMarker = document.createElement('div');
-        itemMarker.classList.add('item-marker');
-
-        let itemTitle = document.createElement('div');
-        itemTitle.classList.add('item-title');
-        itemTitle.id = "itemTitle__" + i;
-        itemTitle.textContent = layerName;
-
-        let itemEye = document.createElement('button');
-        itemEye.classList.add('item-eye');
-        itemEye.classList.add('_show');
-        itemEyeID = itemEyeID + i;
-        itemEye.id = itemEyeID;
+          let itemTitle__wrap = document.createElement('button');
+          itemTitle__wrap.classList.add('item-title__wrap');
+          itemTitle__wrap.id = itemID;
 
 
-        layerList.appendChild(layerList__item);
-        layerList__item.appendChild(itemTitle__wrap);
-        itemTitle__wrap.appendChild(itemMarker);
-        itemTitle__wrap.appendChild(itemTitle);
-        layerList__item.appendChild(itemEye);
+          let itemMarker = document.createElement('div');
+          itemMarker.classList.add('item-marker');
 
-        let found = dataStore.some(obj => obj.itemId == itemID)
-            if(!found){
-              dataStore.push({itemId: itemID, layerId: "",})
-            }
-    
-            console.log("1", dataStore);
-            document.getElementById('data-store').setAttribute('data-store', JSON.stringify(dataStore));
+          let itemTitle = document.createElement('div');
+          itemTitle.classList.add('item-title');
+          itemTitle.id = "itemTitle__" + i;
+          itemTitle.textContent = layerName;
+
+          let itemEye = document.createElement('button');
+          itemEye.classList.add('item-eye');
+          itemEye.classList.add('_show');
+          itemEyeID = itemEyeID + i;
+          itemEye.id = itemEyeID;
+
+
+          layerList.appendChild(layerList__item);
+          layerList__item.appendChild(itemTitle__wrap);
+          itemTitle__wrap.appendChild(itemMarker);
+          itemTitle__wrap.appendChild(itemTitle);
+          layerList__item.appendChild(itemEye);
+
+
+          let found = dataStore.some(obj => obj.itemId == itemID)
+          if (!found) {
+            dataStore.push({ itemId: itemID, layerId: "", })
+          } else {
+            let findItemId = dataStore.find(obj => obj.itemId === itemID)
+            layerList__item.id = findItemId.layerId;
+            // console.log("findItemId: ", findItemId);
+                if (dataItem.data_type) {
+                  // getting layer Id to override it 
+                  let dataType = dataItem.data_type;
+                  console.log("findItemId.layerId: ", findItemId.layerId);
+                  let layerId = findItemId.layerId;
+
+
+    // getting properties from widget and override them
+    // function overrideProperties(dataItem) {
+      let result;
+      switch (dataType) {
+        case 'point':
+          // console.log(dataItem.point_color, dataItem.point_size, dataItem.point_outline_color, dataItem.point_outline_width);
+          result = ({"color": dataItem.point_color || "yellow", "pointSize": dataItem.point_size || "1", "stroke": dataItem.point_outline_color || "yellow", " stroke-width": dataItem.point_outline_width || "1"});
+          break
+
+        case 'icon':
+          console.log(dataItem.image_URL, dataItem.image_size);
+          break
+
+        case 'line':
+          // console.log(dataItem.line_color, dataItem.line_width);
+          result = ({"stroke": dataItem.line_color || "yellow", "stroke-width": dataItem.line_width || "1"});
+          break
+
+        case 'polygon':
+          // console.log(dataItem.polygon_color, dataItem.outline_color, dataItem.outline_width);
+          result = ({"fillColor": dataItem.polygon_color || "yellow", "stroke": dataItem.outline_color || "yellow", "stroke-width": dataItem.outline_width || "1"} );
+          break
+
+        case 'kml':
+          console.log("kml");
+          break
+
+        case 'czml':
+          console.log("czml");
+          break
       }
+      // dataProperties.push(result);
+      // JSON.stringify(dataProperties);
+      // dataStore.push(result);
 
+        // }
+
+         // override
+        // reearth.layers.overrideProperty(geojsonLayerId, {
+        //   default: {
+        //     url: geojsonData,
+        //   },
+        // });
+
+        console.log("geojsonData", geojsonData);
+        console.log(result);
+                } 
+          }
+
+          console.log("1", dataStore);
+          document.getElementById('data-store').setAttribute('data-store', JSON.stringify(dataStore));
+        }
 
         function download(btn_id) {
           let itemID = btn_id;
@@ -334,6 +404,9 @@ reearth.ui.show(`
             if (!data.hasOwnProperty("errorMessage")) {
               //  let geojsonData = JSON.parse(data)
               let geojsonData = data;
+              // geojsonData.features.forEach(function (feature) {
+              //   feature.properties = JSON.parse(dataProperties);
+              // })
               console.log("geojsonData: ", geojsonData);
               let center = turf.center(geojsonData)
               // parent.postMessage({type: "showGeojson", data: geojsonData, center}, "*")
@@ -348,7 +421,6 @@ reearth.ui.show(`
             }
           });
         }
-        //  ./download
 
         download_btns = document.querySelectorAll('.item-title__wrap');
         // console.log("download_btns: ", download_btns);
@@ -358,12 +430,11 @@ reearth.ui.show(`
 
           if (isButton === "BUTTON") {
             let btn_id = e.target.id;
-            console.log(btn_id);
+            // console.log(btn_id);
 
             download(btn_id);
           } else {
             let btn_id = e.target.parentElement.closest('button').id;
-            console.log(btn_id);
             download(btn_id);
           }
         }
@@ -372,99 +443,104 @@ reearth.ui.show(`
           download_btn.addEventListener("click", buttonPressed);
         }
 
-        // hide and show layers
-        eye_btns = document.querySelectorAll('.item-eye');
-
-        let handleLayer = e => {
-          let layer_id = e.target.parentElement.id;
-          reearth.layers.layers;
-
-          var btnClass = e.target.classList;
-          // console.log(btnClass);
-
-          if (btnClass.contains('_show')) {
-            reearth.layers.hide(layer_id);
-
-            btnClass.remove('_show');
-            btnClass.add('_hide');
-          } else {
-            reearth.layers.show(layer_id);
-
-            btnClass.remove('_hide');
-            btnClass.add('_show');
-          }
-
-        }
-
-        for (let eye_btn of eye_btns) {
-          eye_btn.addEventListener("click", handleLayer);
-        }
-
+        //  ./download
       });
       //   ./forEach
-    }
-      //  ./handleData
 
 
+      // hide and show layers
+      eye_btns = document.querySelectorAll('.item-eye');
 
+      let handleLayer = e => {
+        let layer_id = e.target.parentElement.id;
+        reearth.layers.layers;
 
-      let geojsonLayerId
-      function showGeojson(geojsonData, center, btn_id) {
-        if (!document.getElementById(btn_id).parentElement.hasAttribute('id')) {
-          geojsonLayerId = reearth.layers.add({
-            extensionId: "resource",
-            isVisible: true,
-            title: "geojson-data",
-            property: {
-              default: {
-                url: geojsonData,
-                type: "geojson",
-                clampToGround: true
-              },
-            },
-          })
+        var btnClass = e.target.classList;
+        // console.log(btnClass);
 
-          reearth.camera.flyTo({
-            lat: center.geometry.coordinates[1],
-            lng: center.geometry.coordinates[0],
-            height: 50000
-          }, {
-            duration: 2
-          });
+        if (btnClass.contains('_show')) {
+          reearth.layers.hide(layer_id);
 
-
-          let found = dataStore.some(obj => obj.itemId == btn_id)
-          if(found){
-// find this [i] with this obj
-          }
-          console.log(dataStore);
-
-          document.getElementById(btn_id).parentElement.setAttribute('id', geojsonLayerId);
-          // let test = document.getElementById(btn_id).parentElement.id;
+          btnClass.remove('_show');
+          btnClass.add('_hide');
         } else {
-          console.log("has id");
-          // // refresh
-          // reearth.layers.overrideProperty(geojsonLayerId, {
-          //   default: {
-          //     url: [],
-          //   },
-          // });
+          reearth.layers.show(layer_id);
 
-          // // override
-          // reearth.layers.overrideProperty(geojsonLayerId, {
-          //   default: {
-          //     url: geojsonData,
-          //   },
-          // });
-          reearth.camera.flyTo({
-            lat: center.geometry.coordinates[1],
-            lng: center.geometry.coordinates[0],
-            height: 50000
-          }, {
-            duration: 2
-          });
+          btnClass.remove('_hide');
+          btnClass.add('_show');
         }
+
       }
+
+      for (let eye_btn of eye_btns) {
+        eye_btn.addEventListener("click", handleLayer);
+      }
+    };
+    //  ./handleData
+
+
+    let geojsonLayerId
+    function showGeojson(geojsonData, center, btn_id) {
+      if (!document.getElementById(btn_id).parentElement.hasAttribute('id')) {
+        geojsonLayerId = reearth.layers.add({
+          extensionId: "resource",
+          isVisible: true,
+          title: "geojson-data",
+          property: {
+            default: {
+              url: geojsonData,
+              type: "geojson",
+              clampToGround: true
+            },
+          },
+        })
+
+        reearth.camera.flyTo({
+          lat: center.geometry.coordinates[1],
+          lng: center.geometry.coordinates[0],
+          height: 50000
+        }, {
+          duration: 2
+        });
+
+
+        let found = dataStore.some(obj => obj.itemId == btn_id)
+        if (found) {
+          let filtrItemId = dataStore.find(obj => obj.itemId === btn_id)
+          filtrItemId.layerId = geojsonLayerId;
+          // console.log(filtrItemId);
+        }
+
+        document.getElementById(btn_id).parentElement.setAttribute('id', geojsonLayerId);
+        // let test = document.getElementById(btn_id).parentElement.id;
+      } else {
+        // console.log("has id");
+
+        // geojsonLayerId = document.getElementById(btn_id).parentElement.getAttribute('id')
+        
+        // // refresh
+        // reearth.layers.overrideProperty(geojsonLayerId, {
+        //   default: {
+        //     url: [],
+        //   },
+        // });
+
+        // // override
+        // reearth.layers.overrideProperty(geojsonLayerId, {
+        //   default: {
+        //     url: geojsonData,
+        //   },
+        // });
+
+        reearth.camera.flyTo({
+          lat: center.geometry.coordinates[1],
+          lng: center.geometry.coordinates[0],
+          height: 50000
+        }, {
+          duration: 2
+        });
+      }
+    }
     //  ./showGeojson
   </script>
   `);
