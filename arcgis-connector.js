@@ -157,7 +157,7 @@ reearth.ui.show(`
     dataStore.push({
       itemId: "",
       layerId: "",
-    })
+    });
 
     let dataProperties;
 
@@ -184,45 +184,6 @@ reearth.ui.show(`
         handleData(property);
       }
     });
-
-
-    // getting properties from widget and override them
-    // function overrideProperties(dataItem) {
-    //   let dataType = dataItem.data_type;
-    //   let result;
-    //   switch (dataType) {
-    //     case 'point':
-    //       // console.log(dataItem.point_color, dataItem.point_size, dataItem.point_outline_color, dataItem.point_outline_width);
-    //       result = ({"color": dataItem.point_color || "yellow", "pointSize": dataItem.point_size || "1", "stroke": dataItem.point_outline_color || "yellow", " stroke-width": dataItem.point_outline_width || "1"});
-    //       break
-
-    //     case 'icon':
-    //       console.log(dataItem.image_URL, dataItem.image_size);
-    //       break
-
-    //     case 'line':
-    //       // console.log(dataItem.line_color, dataItem.line_width);
-    //       result = ({"stroke": dataItem.line_color || "yellow", "stroke-width": dataItem.line_width || "1"});
-    //       break
-
-    //     case 'polygon':
-    //       // console.log(dataItem.polygon_color, dataItem.outline_color, dataItem.outline_width);
-    //       result = ({"fillColor": dataItem.polygon_color || "yellow", "stroke": dataItem.outline_color || "yellow", "stroke-width": dataItem.outline_width || "1"} );
-    //       break
-
-    //     case 'kml':
-    //       console.log("kml");
-    //       break
-
-    //     case 'czml':
-    //       console.log("czml");
-    //       break
-    //   }
-    //   // dataProperties.push(result);
-    //   // JSON.stringify(dataProperties);
-    //   // dataStore.push(result);
-    //   return result;
-    // }
 
     function handleData(files) {
       // console.log("files: ", files)
@@ -316,68 +277,22 @@ reearth.ui.show(`
 
           let found = dataStore.some(obj => obj.itemId == itemID)
           if (!found) {
-            dataStore.push({ itemId: itemID, layerId: "", })
+            dataStore.push({ itemId: itemID, layerId: "",})
           } else {
             let findItemId = dataStore.find(obj => obj.itemId === itemID)
             layerList__item.id = findItemId.layerId;
             // console.log("findItemId: ", findItemId);
-                if (dataItem.data_type) {
-                  // getting layer Id to override it 
-                  let dataType = dataItem.data_type;
-                  console.log("findItemId.layerId: ", findItemId.layerId);
+                if (findItemId.layerId && dataItem.data_type) {
+                  // getting layer Id and data type to override properties, if file downloaded already
                   let layerId = findItemId.layerId;
 
-
-    // getting properties from widget and override them
-    // function overrideProperties(dataItem) {
-      let result;
-      switch (dataType) {
-        case 'point':
-          // console.log(dataItem.point_color, dataItem.point_size, dataItem.point_outline_color, dataItem.point_outline_width);
-          result = ({"color": dataItem.point_color || "yellow", "pointSize": dataItem.point_size || "1", "stroke": dataItem.point_outline_color || "yellow", " stroke-width": dataItem.point_outline_width || "1"});
-          break
-
-        case 'icon':
-          console.log(dataItem.image_URL, dataItem.image_size);
-          break
-
-        case 'line':
-          // console.log(dataItem.line_color, dataItem.line_width);
-          result = ({"stroke": dataItem.line_color || "yellow", "stroke-width": dataItem.line_width || "1"});
-          break
-
-        case 'polygon':
-          // console.log(dataItem.polygon_color, dataItem.outline_color, dataItem.outline_width);
-          result = ({"fillColor": dataItem.polygon_color || "yellow", "stroke": dataItem.outline_color || "yellow", "stroke-width": dataItem.outline_width || "1"} );
-          break
-
-        case 'kml':
-          console.log("kml");
-          break
-
-        case 'czml':
-          console.log("czml");
-          break
-      }
-      // dataProperties.push(result);
-      // JSON.stringify(dataProperties);
-      // dataStore.push(result);
-
-        // }
-
-         // override
-        // reearth.layers.overrideProperty(geojsonLayerId, {
-        //   default: {
-        //     url: geojsonData,
-        //   },
-        // });
-
-        console.log("geojsonData", geojsonData);
-        console.log(result);
+                  let geojson = reearth.layers.findById(layerId).property.default.url
+                  // console.log(geojson);
+                  overrideProperties(geojson, dataItem, layerId);
                 } 
           }
 
-          console.log("1", dataStore);
+          // console.log("1", dataStore);
           document.getElementById('data-store').setAttribute('data-store', JSON.stringify(dataStore));
         }
 
@@ -408,7 +323,8 @@ reearth.ui.show(`
               //   feature.properties = JSON.parse(dataProperties);
               // })
               console.log("geojsonData: ", geojsonData);
-              let center = turf.center(geojsonData)
+              let center = turf.center(geojsonData);
+
               // parent.postMessage({type: "showGeojson", data: geojsonData, center}, "*")
               showGeojson(geojsonData, center, btn_id)
             } else {
@@ -421,6 +337,8 @@ reearth.ui.show(`
             }
           });
         }
+        //  ./download
+
 
         download_btns = document.querySelectorAll('.item-title__wrap');
         // console.log("download_btns: ", download_btns);
@@ -443,7 +361,6 @@ reearth.ui.show(`
           download_btn.addEventListener("click", buttonPressed);
         }
 
-        //  ./download
       });
       //   ./forEach
 
@@ -516,22 +433,6 @@ reearth.ui.show(`
       } else {
         // console.log("has id");
 
-        // geojsonLayerId = document.getElementById(btn_id).parentElement.getAttribute('id')
-        
-        // // refresh
-        // reearth.layers.overrideProperty(geojsonLayerId, {
-        //   default: {
-        //     url: [],
-        //   },
-        // });
-
-        // // override
-        // reearth.layers.overrideProperty(geojsonLayerId, {
-        //   default: {
-        //     url: geojsonData,
-        //   },
-        // });
-
         reearth.camera.flyTo({
           lat: center.geometry.coordinates[1],
           lng: center.geometry.coordinates[0],
@@ -540,8 +441,65 @@ reearth.ui.show(`
           duration: 2
         });
       }
-    }
+    };
     //  ./showGeojson
+
+
+   // getting properties from widget and override them
+     function overrideProperties(geojson, dataItem, layerId) {
+        let dataType = dataItem.data_type
+    let result
+    switch (dataType) {
+      case 'point':
+        // console.log(dataItem.point_color, dataItem.point_size, dataItem.point_outline_color, dataItem.point_outline_width);
+        result = ({"fill": dataItem.point_color || "yellow", "radius": dataItem.point_size || "2px", "stroke": dataItem.point_outline_color || "yellow", "": dataItem.point_outline_width || "1"});
+        // clean markers?
+        break
+
+      case 'icon':
+        result = ({"marker-image" : dataItem.image_URL, "marker-size" : dataItem.image_size || "small"})
+        // console.log(dataItem.image_URL, dataItem.image_size);
+
+      break
+
+      case 'line':
+        // console.log(dataItem.line_color, dataItem.line_width);
+      result = ({"stroke": dataItem.line_color || "yellow", "stroke-width": dataItem.line_width || "1"});
+        break
+
+      case 'polygon':
+        // console.log(dataItem.polygon_color, dataItem.outline_color, dataItem.outline_width);
+        result = ({"fill": dataItem.polygon_color || "yellow", "stroke": dataItem.outline_color || "yellow", "stroke-width": dataItem.outline_width || "1"});
+        break
+
+      case 'kml':
+        console.log("kml");
+        break
+
+      case 'czml':
+        console.log("czml");
+        break
+    };
+
+      let jsonProperties = JSON.stringify(result);
+      geojson.features.forEach(function (feature) {
+              feature.properties = JSON.parse(jsonProperties);
+            })
+
+      const geoJsonString = JSON.stringify(geojson);
+     
+      const blob = new Blob([geoJsonString], { type: 'application/json' });
+      const link = URL.createObjectURL(blob);
+    
+    // override
+    reearth.layers.overrideProperty(layerId, {
+      default: {
+        url: link,
+      },
+    });
+  };
+
+
   </script>
   `);
 

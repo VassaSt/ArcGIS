@@ -95,9 +95,8 @@ extensions:
               type: string
               value: icon
           - id: image_size
-            type: number
+            type: string
             title: Image size
-            suffix: px
             availableIf:
               field: data_type
               type: string
