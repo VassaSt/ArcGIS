@@ -277,19 +277,19 @@ reearth.ui.show(`
 
           let found = dataStore.some(obj => obj.itemId == itemID)
           if (!found) {
-            dataStore.push({ itemId: itemID, layerId: "",})
+            dataStore.push({ itemId: itemID, layerId: "", })
           } else {
             let findItemId = dataStore.find(obj => obj.itemId === itemID)
-            layerList__item.id = findItemId.layerId;
-            // console.log("findItemId: ", findItemId);
-                if (findItemId.layerId && dataItem.data_type) {
-                  // getting layer Id and data type to override properties, if file downloaded already
-                  let layerId = findItemId.layerId;
-
-                  let geojson = reearth.layers.findById(layerId).property.default.url
-                  // console.log(geojson);
-                  overrideProperties(geojson, dataItem, layerId);
-                } 
+            let layerId = findItemId.layerId;
+            layerList__item.id = layerId;
+              if (dataItem.data_type !== "default"){
+                // getting layer Id and data type to override properties, if file downloaded already
+                console.log("data_type: ", dataItem.data_type);
+                console.log("layerId: ", layerId);
+                let geoJsonData = reearth.layers.findById(layerId).property.default.url
+                console.log("geoJsonData: ", geoJsonData);
+                overrideProperties(geoJsonData, dataItem, layerId);
+              }
           }
 
           // console.log("1", dataStore);
@@ -319,12 +319,8 @@ reearth.ui.show(`
             if (!data.hasOwnProperty("errorMessage")) {
               //  let geojsonData = JSON.parse(data)
               let geojsonData = data;
-              // geojsonData.features.forEach(function (feature) {
-              //   feature.properties = JSON.parse(dataProperties);
-              // })
-              console.log("geojsonData: ", geojsonData);
-              let center = turf.center(geojsonData);
 
+              let center = turf.center(geojsonData);
               // parent.postMessage({type: "showGeojson", data: geojsonData, center}, "*")
               showGeojson(geojsonData, center, btn_id)
             } else {
@@ -445,60 +441,116 @@ reearth.ui.show(`
     //  ./showGeojson
 
 
-   // getting properties from widget and override them
-     function overrideProperties(geojson, dataItem, layerId) {
-        let dataType = dataItem.data_type
-    let result
-    switch (dataType) {
-      case 'point':
-        // console.log(dataItem.point_color, dataItem.point_size, dataItem.point_outline_color, dataItem.point_outline_width);
-        result = ({"fill": dataItem.point_color || "yellow", "radius": dataItem.point_size || "2px", "stroke": dataItem.point_outline_color || "yellow", "": dataItem.point_outline_width || "1"});
-        // clean markers?
-        break
+    function overridePoinProperties(geoJsonData, layerId, result) {
+      // console.log("point", geoJsonData);
 
-      case 'icon':
-        result = ({"marker-image" : dataItem.image_URL, "marker-size" : dataItem.image_size || "small"})
-        // console.log(dataItem.image_URL, dataItem.image_size);
-
-      break
-
-      case 'line':
-        // console.log(dataItem.line_color, dataItem.line_width);
-      result = ({"stroke": dataItem.line_color || "yellow", "stroke-width": dataItem.line_width || "1"});
-        break
-
-      case 'polygon':
-        // console.log(dataItem.polygon_color, dataItem.outline_color, dataItem.outline_width);
-        result = ({"fill": dataItem.polygon_color || "yellow", "stroke": dataItem.outline_color || "yellow", "stroke-width": dataItem.outline_width || "1"});
-        break
-
-      case 'kml':
-        console.log("kml");
-        break
-
-      case 'czml':
-        console.log("czml");
-        break
-    };
-
-      let jsonProperties = JSON.stringify(result);
-      geojson.features.forEach(function (feature) {
-              feature.properties = JSON.parse(jsonProperties);
-            })
-
-      const geoJsonString = JSON.stringify(geojson);
-     
-      const blob = new Blob([geoJsonString], { type: 'application/json' });
-      const link = URL.createObjectURL(blob);
-    
-    // override
-    reearth.layers.overrideProperty(layerId, {
-      default: {
-        url: link,
+      let geoJsonPoints = {
+        "type": "FeatureCollection",
+        "features": [],
+      };
+  
+      let coordinates = [];
+      console.log(geoJsonPoints);
+      let feature = {
+      "geometry": {
+        "coordinates": []
       },
-    });
-  };
+      "properties": {},
+    };
+    
+      geoJsonData.features.forEach(function(feature){
+let coordinates = feature.geometry.coordinates;
+feature.geometry.coordinates = coordinates;
+feature.properties = result;
+geoJsonPoints.features.push(feature);
+      })
+    console.log(geoJsonPoints);
 
+    var multiPt = turf.multiPoint([[0,0],[10,10]]);
+
+//     turf.featureEach(geoJsonData, function (currentFeature, featureIndex) {
+// let feature = turf.point(turf.getCoord(currentFeature));
+// geoJsonPoints.features.push(feature);
+//     });
+
+//     turf.featureEach(geoJsonPoints, function (currentFeature, featureIndex) {
+//       currentFeature.properties = result;
+//           });
+      
+
+
+      console.log(geoJsonPoints);
+
+
+            // let geoJsonString = JSON.stringify(geoJsonPoints);
+
+            // let blob = new Blob([geoJsonString], { type: 'application/json' });
+            // let link = URL.createObjectURL(blob);
+
+
+            // override
+            reearth.layers.overrideProperty(layerId, {
+              property: {
+                default: {
+                  url: multiPt,
+                  type: "geojson",
+                  clampToGround: true
+                },
+              },
+            });
+      
+    }
+
+    function overridePolygonProperties(geoJsonData) {
+      console.log("polygon", geoJsonData);
+      let geoJsonPoints = {
+      "type": "FeatureCollection",
+      "features": [],
+    };
+    }
+
+    // getting properties from widget and override them
+    function overrideProperties(geoJsonData, dataItem, layerId) {
+      let dataType = dataItem.data_type
+      let result;
+
+      switch (dataType) {
+        case 'point':
+          // console.log(dataItem.point_color, dataItem.point_size, dataItem.point_outline_color, dataItem.point_outline_width);
+          result = ({ "fill": dataItem.point_color || "yellow", "radius": dataItem.point_size || "2px", "color": dataItem.point_outline_color || "yellow",});
+          overridePoinProperties(geoJsonData, layerId, result);
+          break
+
+        case 'icon':
+          result = ({ "marker-image": dataItem.image_URL, "marker-size": dataItem.image_size || "small" })
+          overridePoinProperties(geoJsonData, layerId, result);
+          // console.log(dataItem.image_URL, dataItem.image_size);
+
+          break
+
+        case 'line':
+          // console.log(dataItem.line_color, dataItem.line_width);
+          result = ({ "stroke": dataItem.line_color || "yellow", "stroke-width": dataItem.line_width || "1" });
+          console.log(lines);
+          break
+
+        case 'polygon':
+          // console.log(dataItem.polygon_color, dataItem.outline_color, dataItem.outline_width);
+          result = ({ "fill": dataItem.polygon_color || "yellow", "stroke": dataItem.outline_color || "yellow", "stroke-width": dataItem.outline_width || "1" });
+          console.log(polygon);
+          overridePolygonProperties(geoJsonData);
+          break
+
+        case 'kml':
+          console.log("kml");
+          break
+
+        case 'czml':
+          console.log("czml");
+          break
+
+      }
+    }
 
   </script>
   `);
