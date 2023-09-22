@@ -282,7 +282,7 @@ reearth.ui.show(`
             let findItemId = dataStore.find(obj => obj.itemId === itemID)
             let layerId = findItemId.layerId;
             layerList__item.id = layerId;
-              if (dataItem.data_type !== "default"){
+              if (layerId && dataItem.data_type !== "default"){
                 // getting layer Id and data type to override properties, if file downloaded already
                 console.log("data_type: ", dataItem.data_type);
                 console.log("layerId: ", layerId);
@@ -441,62 +441,48 @@ reearth.ui.show(`
     //  ./showGeojson
 
 
-    function overridePoinProperties(geoJsonData, layerId, result) {
-      // console.log("point", geoJsonData);
+    function overridePoinProperties(geoJsonData, layerId, result, radius, fill) {
 
-      let geoJsonPoints = {
-        "type": "FeatureCollection",
-        "features": [],
-      };
-  
-      let coordinates = [];
-      console.log(geoJsonPoints);
-      let feature = {
-      "geometry": {
-        "coordinates": []
-      },
-      "properties": {},
-    };
-    
-      geoJsonData.features.forEach(function(feature){
-let coordinates = feature.geometry.coordinates;
-feature.geometry.coordinates = coordinates;
-feature.properties = result;
-geoJsonPoints.features.push(feature);
-      })
-    console.log(geoJsonPoints);
+let geoJsonPoints = turf.featureCollection([]);
+// console.log(geoJsonPoints);
 
-    var multiPt = turf.multiPoint([[0,0],[10,10]]);
+    turf.featureEach(geoJsonData, function (currentFeature, featureIndex) {
 
-//     turf.featureEach(geoJsonData, function (currentFeature, featureIndex) {
-// let feature = turf.point(turf.getCoord(currentFeature));
-// geoJsonPoints.features.push(feature);
-//     });
+var center = turf.getCoord(currentFeature);
+var options = {steps: 10, units: 'meters'};
+var circle = turf.circle(center, radius, options);
+circle.properties["fill"] = fill;
+var coords = turf.getCoords(circle);
 
-//     turf.featureEach(geoJsonPoints, function (currentFeature, featureIndex) {
-//       currentFeature.properties = result;
-//           });
-      
+var poly = turf.polygon(coords);
 
+var line = turf.polygonToLine(poly);
+
+line.properties = result;
+geoJsonPoints.features.push(line);
+    });
 
       console.log(geoJsonPoints);
 
-
-            // let geoJsonString = JSON.stringify(geoJsonPoints);
-
-            // let blob = new Blob([geoJsonString], { type: 'application/json' });
-            // let link = URL.createObjectURL(blob);
-
+      var polygon = turf.polygon([[[-5, 52], [-4, 56], [-2, 51], [-7, 54], [-5, 52]]], { name: 'poly1' });
+      polygon.properties["stroke"]= "yellow";
+      polygon.properties["stroke-width"]= "10";
 
             // override
             reearth.layers.overrideProperty(layerId, {
               property: {
                 default: {
-                  url: multiPt,
-                  type: "geojson",
-                  clampToGround: true
+                  url: polygon,
                 },
               },
+            });
+
+            reearth.camera.flyTo({
+              lat: polygon.geometry.coordinates[1],
+              lng: polygon.geometry.coordinates[0],
+              height: 1000
+            }, {
+              duration: 2
             });
       
     }
@@ -517,8 +503,10 @@ geoJsonPoints.features.push(feature);
       switch (dataType) {
         case 'point':
           // console.log(dataItem.point_color, dataItem.point_size, dataItem.point_outline_color, dataItem.point_outline_width);
-          result = ({ "fill": dataItem.point_color || "yellow", "radius": dataItem.point_size || "2px", "color": dataItem.point_outline_color || "yellow",});
-          overridePoinProperties(geoJsonData, layerId, result);
+          result = ({"stroke": dataItem.point_outline_color || "yellow", "stroke-width": dataItem.point_outline_width || "2"});
+          let radius = dataItem.point_size || "1";
+          let fill = dataItem.point_color || "yellow";
+          overridePoinProperties(geoJsonData, layerId, result, radius, fill);
           break
 
         case 'icon':
