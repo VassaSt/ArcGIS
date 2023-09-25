@@ -65,7 +65,7 @@ extensions:
           - id: point_size
             type: number
             title: Point size
-            suffix: px
+            suffix: meters
             availableIf:
               field: data_type
               type: string
@@ -95,8 +95,9 @@ extensions:
               type: string
               value: icon
           - id: image_size
-            type: string
+            type: number
             title: Image size
+            suffix: px
             availableIf:
               field: data_type
               type: string
