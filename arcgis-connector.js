@@ -276,18 +276,16 @@ reearth.ui.show(`
 
 
           let found = dataStore.some(obj => obj.itemId == itemID)
+          console.log(found);
           if (!found) {
-            dataStore.push({ itemId: itemID, layerId: "", })
+            dataStore.push({ itemId: itemID, layerId: ""})
           } else {
             let findItemId = dataStore.find(obj => obj.itemId === itemID)
             let layerId = findItemId.layerId;
             layerList__item.id = layerId;
             if (layerId && dataItem.data_type !== "default") {
               // getting layer Id and data type to override properties, if file downloaded already
-              console.log("data_type: ", dataItem.data_type);
-              console.log("layerId: ", layerId);
               let geoJsonData = reearth.layers.findById(layerId).property.default.url
-              console.log("geoJsonData: ", geoJsonData);
               overrideProperties(geoJsonData, dataItem, layerId);
             }
           }
@@ -471,11 +469,20 @@ reearth.ui.show(`
 
       reearth.layers.hide(layerId);
 
+      let arr =[];
+
+      arr.forEach((element) => console.log(element.markerID));
+
+      // let filteredLayers = layers.filter(layer => layer.type === "marker");
+      // console.log(filteredLayers);
+
       turf.featureEach(geoJsonData, function (currentFeature, featureIndex) {
         let long = currentFeature.geometry.coordinates[0];
         let lat = currentFeature.geometry.coordinates[1];
 
-        let markerId = reearth.layers.add({
+        let markerId;
+
+        markerId = reearth.layers.add({
           extensionId: "marker",
           isVisible: true,
           title: "marker",
@@ -491,9 +498,13 @@ reearth.ui.show(`
             }
           }
         });
-      })
 
-      console.log("Icon");
+            arr.push({
+              markerID: markerId,
+            });
+      })
+      dataStore.push(arr);
+      // arr.forEach((element) => console.log(element.markerID));
     }
 
 
@@ -533,10 +544,10 @@ reearth.ui.show(`
           break
 
         case 'icon':
-          // result = ({ "marker-image": dataItem.image_URL, "marker-size": dataItem.image_size || "small" })
+          // result = ({ "marker-image": dataItem.image_URL, "marker-size": dataItem.image_size || "1" })
           
           let imageUrl = dataItem.image_URL
-          let imageSize = dataItem.image_size
+          let imageSize = dataItem.image_size || "1"; 
 
           overrideIconProperties(geoJsonData, layerId, imageUrl, imageSize);
           // console.log(dataItem.image_URL, dataItem.image_size);
@@ -557,7 +568,7 @@ reearth.ui.show(`
         case 'polygon':
           // console.log(dataItem.polygon_color, dataItem.outline_color, dataItem.outline_width);
           fill = dataItem.polygon_color || "yellow";
-          result = ({"stroke": dataItem.outline_color || "#000000", "stroke-width": dataItem.outline_width || "1" });
+          result = ({"stroke": dataItem.outline_color || "#000000", "stroke-width": "1" });
           // console.log(polygon);
 
           overridePolygonProperties(geoJsonData,layerId, fill, result);
@@ -565,10 +576,6 @@ reearth.ui.show(`
 
         case 'kml':
           console.log("kml");
-          break
-
-        case 'czml':
-          console.log("czml");
           break
 
       }

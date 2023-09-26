@@ -42,17 +42,15 @@ extensions:
               - key: default
                 label: Choose type
               - key: point
-                label: Point
+                label: Point(color)
               - key: icon
-                label: Icon
+                label: Point(icon)
               - key: line
                 label: Line
               - key: polygon
                 label: Polygon
               - key: kml
                 label: kml
-              - key: czml
-                label: czml
             defaultValue: default
           - id: point_color
             type: string
@@ -96,8 +94,7 @@ extensions:
               value: icon
           - id: image_size
             type: number
-            title: Image size
-            suffix: px
+            title: Image scale
             availableIf:
               field: data_type
               type: string
@@ -134,12 +131,5 @@ extensions:
                 field: data_type
                 type: string
                 value: polygon
-          - id: outline_width
-            type: number
-            title: Outline width
-            suffix: px
-            availableIf:
-                field: data_type
-                type: string
-                value: polygon
+
 

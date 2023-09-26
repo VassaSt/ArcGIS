@@ -102,3 +102,33 @@
         // } else {
         //   console.log("point");
         // }
+
+
+
+                  - id: outline_width
+            type: number
+            title: Outline width
+            suffix: px
+            availableIf:
+                field: data_type
+                type: string
+                value: polygon
+
+
+
+
+                {
+          reearth.layers.overrideProperty((markerId), {
+            default: {
+              url: [],
+            }
+          });
+
+          reearth.layers.overrideProperty((markerId), {
+            default: {
+              image: imageUrl,
+              imageSize: imageSize,
+            }
+          });
+          
+        } else 
