@@ -157,9 +157,12 @@ reearth.ui.show(`
     dataStore.push({
       itemId: "",
       layerId: "",
+      arr: [],
     });
 
-    let dataProperties;
+    let iconCoords = Array();
+
+
 
     //   copy from right side panel menu 
     // let client_id = 'mkE152IGDlgiIG3S'
@@ -276,9 +279,9 @@ reearth.ui.show(`
 
 
           let found = dataStore.some(obj => obj.itemId == itemID)
-          console.log(found);
+          // console.log(found);
           if (!found) {
-            dataStore.push({ itemId: itemID, layerId: ""})
+            dataStore.push({ itemId: itemID, layerId: "", arr: [],})
           } else {
             let findItemId = dataStore.find(obj => obj.itemId === itemID)
             let layerId = findItemId.layerId;
@@ -372,10 +375,26 @@ reearth.ui.show(`
         if (btnClass.contains('_show')) {
           reearth.layers.hide(layer_id);
 
+        let findlayerId = dataStore.find(obj => obj.layerId === layer_id);
+        if (findlayerId.arr.length > 0){
+          findlayerId.arr.forEach((element) => {
+            let markerId = element;
+            reearth.layers.hide(markerId);
+          });
+        }
+
           btnClass.remove('_show');
           btnClass.add('_hide');
         } else {
           reearth.layers.show(layer_id);
+
+          let findlayerId = dataStore.find(obj => obj.layerId === layer_id);
+          if (findlayerId.arr.length > 0){
+            findlayerId.arr.forEach((element) => {
+              let markerId = element;
+              reearth.layers.show(markerId);
+            });
+          }
 
           btnClass.remove('_hide');
           btnClass.add('_show');
@@ -439,8 +458,14 @@ reearth.ui.show(`
     //  ./showGeojson
 
 
-    // override properties from default point marker to circle
+    // override properties from default point marker or icon to circle
     function overridePoinProperties(geoJsonData, layerId, result, radius, fill) {
+
+      for (let i = 0; i < geoJsonData.features.length; i++) {
+     if (geoJsonData.features[i].geometry.type === "Point" || "MultiPoint") {
+      console.log(geoJsonData.features[i].geometry.type)
+      }
+    }
 
       let geoJson = turf.featureCollection([]);
 
@@ -450,7 +475,7 @@ reearth.ui.show(`
         var options = { steps: 10, units: 'meters' };
         var circle = turf.circle(center, radius, options);
         circle.properties["fill"] = fill;
-        console.log("circle", circle);
+        // console.log("circle", circle);
 
         var line = turf.polygonToLine(circle);
         // console.log(line)
@@ -463,26 +488,21 @@ reearth.ui.show(`
     }
 
 
-    function overrideIconProperties (geoJsonData, layerId, imageUrl, imageSize) {
-      // let geoJson = turf.featureCollection([]);
-      // parent.postMessage({ type: "Properties", layerId, geoJson }, "*");
+    // override properties from default point marker or circle to icon
+    function overrideIconProperties (iconCoords, layerId, imageUrl, imageSize) {
+      let geoJson = turf.featureCollection([]);
+      parent.postMessage({ type: "Properties", layerId, geoJson }, "*");
 
-      reearth.layers.hide(layerId);
+      let findlayerId = dataStore.find(obj => obj.layerId === layerId)
+      // console.log(findlayerId.arr.length);
+      if (findlayerId.arr.length == 0){
 
-      let arr =[];
+      iconCoords.forEach((element) => {
 
-      arr.forEach((element) => console.log(element.markerID));
+        let long = element[0];
+        let lat = element[1];
 
-      // let filteredLayers = layers.filter(layer => layer.type === "marker");
-      // console.log(filteredLayers);
-
-      turf.featureEach(geoJsonData, function (currentFeature, featureIndex) {
-        let long = currentFeature.geometry.coordinates[0];
-        let lat = currentFeature.geometry.coordinates[1];
-
-        let markerId;
-
-        markerId = reearth.layers.add({
+       let markerId = reearth.layers.add({
           extensionId: "marker",
           isVisible: true,
           title: "marker",
@@ -499,17 +519,30 @@ reearth.ui.show(`
           }
         });
 
-            arr.push({
-              markerID: markerId,
-            });
+        let findlayerId = dataStore.find(obj => obj.layerId === layerId)
+        if (findlayerId){
+          findlayerId.arr.push(markerId);
+        }
       })
-      dataStore.push(arr);
-      // arr.forEach((element) => console.log(element.markerID));
+    } else {
+      findlayerId.arr.forEach((element) => {
+        let markerId = element;
+      reearth.layers.show(markerId);
+      reearth.layers.overrideProperty((markerId), {
+        default: {
+          image: imageUrl,
+          imageSize: imageSize,
+        }
+      });
+      });
+    }
     }
 
 
     function overridePolygonProperties(geoJsonData, layerId, fill, result) {
       let geoJson = turf.featureCollection([]);
+
+      // Need to check  if it Polygon or not 
 
       turf.featureEach(geoJsonData, function (currentFeature, featureIndex) {
         currentFeature.properties["fill"] = fill;
@@ -536,11 +569,21 @@ reearth.ui.show(`
 
       switch (dataType) {
         case 'point':
+
+        let findlayerId = dataStore.find(obj => obj.layerId === layerId);
+        if (findlayerId.arr.length > 0){
+          findlayerId.arr.forEach((element) => {
+            let markerId = element;
+            reearth.layers.hide(markerId);
+          });
+        }
+
           // console.log(dataItem.point_color, dataItem.point_size, dataItem.point_outline_color, dataItem.point_outline_width);
           result = ({ "stroke": dataItem.point_outline_color || "#000000", "stroke-width": dataItem.point_outline_width || "3" });
           let radius = dataItem.point_size || "1500";
           fill = dataItem.point_color || "yellow";
-          overridePoinProperties(geoJsonData, layerId, result, radius, fill);
+
+    overridePoinProperties(geoJsonData, layerId, result, radius, fill);
           break
 
         case 'icon':
@@ -549,7 +592,13 @@ reearth.ui.show(`
           let imageUrl = dataItem.image_URL
           let imageSize = dataItem.image_size || "1"; 
 
-          overrideIconProperties(geoJsonData, layerId, imageUrl, imageSize);
+          turf.featureEach(geoJsonData, function (currentFeature, featureIndex) {
+          let coord = turf.getCoords(currentFeature);
+          iconCoords.push(coord);
+          })
+
+
+          overrideIconProperties(iconCoords, layerId, imageUrl, imageSize);
           // console.log(dataItem.image_URL, dataItem.image_size);
           break
 
