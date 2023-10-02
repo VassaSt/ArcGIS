@@ -66,16 +66,15 @@
         // document.getElementById(itemEyeID).addEventListener('click', handleLayer);
 
 
-
-              // for (let i = 0; i < geoJsonData.features.length; i++) {
-      //   if ((geoJsonData.features[i].geometry.type === "LineString" || "MultiLineString") && (geoJsonData.features[i].geometry.type !== "Point" || "multiPoint") && (geoJsonData.features[i].geometry.type !== "Polygon" || "MultiPolygon")){
-      //    console.log("Lines");
-      //   } else if ((geoJsonData.features[i].geometry.type === "Point" || "MultiPoint") && (geoJsonData.features[i].geometry.type !== "LineString" || "MultiLineString") && (features[i].geometry.type !== "Polygon" || "MultiPolygon")) {
-      //     console.log("Points");
-      //   } else if ((geoJsonData.features[i].geometry.type === "Polygon" || "MultiPolygon") && (geoJsonData.features[i].geometry.type !== "LineString" || "MultiLineString")  && (geoJsonData.features[i].geometry.type !== "Point" || "multiPoint")) {
-      //     pconsole.log("Polygon");
-      //   }
-      // }
+              for (let i = 0; i < geoJsonData.features.length; i++) {
+                if ((geoJsonData.features[i].geometry.type === "LineString") || (geoJsonData.features[i].geometry.type === "MultiLineString")) {
+                  lines.push(geoJsonData.features[i])
+                } else if ((geoJsonData.features[i].geometry.type === "Point") || (geoJsonData.features[i].geometry.type === "MultiPoint")){
+                  points.push(geoJsonData.features[i])
+                } else if ((geoJsonData.features[i].geometry.type === "Polygon") || (geoJsonData.features[i].geometry.type === "MultiPolygon")) {
+                  polygons.push(geoJsonData.features[i])
+                }
+              }
 
 
 
@@ -101,7 +100,7 @@
         //   });
         // } else {
         //   console.log("point");
-        // }
+         }
 
 
 

@@ -79,7 +79,7 @@ extensions:
           - id: point_outline_width
             type: number
             title: Point outline width
-            suffix: meters
+            suffix: px
             availableIf:
               field: data_type
               type: string
