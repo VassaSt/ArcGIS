@@ -175,7 +175,6 @@ reearth.ui.show(`
     // end copy
 
 
-
     window.addEventListener("message", async function (e) {
       if (e.source !== parent) return;
       reearth = e.source.reearth;
@@ -605,7 +604,6 @@ reearth.ui.show(`
           currentFeature.properties["fill"] = polygonFill;
           // let line = turf.multiLineString(turf.getCoords(currentFeature)[0]);
           // line.properties = polygonProp;
-  
           geoJson.features.push(currentFeature);
           // geoJson.features.push(line);
       });
@@ -818,7 +816,7 @@ reearth.ui.show(`
   reearth.layers.overrideProperty(msg.layerId, {
   default: {
   url: msg.geoJson,
-  type: dataType,
+  type: "geojson",
   clampToGround: true
   },
   })
