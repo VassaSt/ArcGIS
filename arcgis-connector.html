@@ -293,12 +293,10 @@ reearth.ui.show(`
             let layerId = findItemId.layerId;
             layerList__item.id = layerId;
             if (layerId && dataItem.data_type !== "default") {
-              console.log(layerId);
+              // console.log(layerId);
               // getting layer Id and data type to override properties, if file downloaded already
               let geoJsonData = reearth.layers.findById(layerId).property.default.url
-              console.log(geoJsonData);
-
-              
+              console.log("geoJsonData getted  from reearth: ", geoJsonData);
 
               overrideProperties(geoJsonData, dataItem, layerId);
             }
@@ -531,6 +529,7 @@ reearth.ui.show(`
             findlayerId.arr.push(markerId);
           }
         })
+        console.log(dataStore);
       } else {
         findlayerId.arr.forEach((element) => {
           let markerId = element;
@@ -553,15 +552,13 @@ reearth.ui.show(`
         line.properties = lineProp;
         geoJson.features.push(line);
       })
-      console.log("Lines :", geoJson);
+      // console.log("Lines :", geoJson);
       parent.postMessage({ type: "Properties", layerId, geoJson }, "*");
     }
 
 
     function overridePolygonProperties(polygons, layerId, polygonFill, polygonProp) {
       let geoJson = turf.featureCollection([]);
-
-      // Need to check  if it Polygon or not 
 
       turf.featureEach(polygons, function (currentFeature, featureIndex) {
         currentFeature.properties["fill"] = polygonFill;
@@ -570,7 +567,7 @@ reearth.ui.show(`
 
         geoJson.features.push(currentFeature);
         geoJson.features.push(line);
-        // console.log(line);
+        console.log(line);
       });
 
       console.log("Polygon :", geoJson);
@@ -583,6 +580,7 @@ reearth.ui.show(`
 
       let dataType = dataItem.data_type
       let isInvalid = false;
+
       let lines = turf.featureCollection([]);
       let points = turf.featureCollection([]);
       let polygons = turf.featureCollection([]);
@@ -598,9 +596,9 @@ reearth.ui.show(`
         }
       }
       
-      console.log("points: ", points);
-      console.log("lines: ", lines);
-      console.log("polygons: ", polygons);
+      // console.log("points: ", points);
+      // console.log("lines: ", lines);
+      // console.log("polygons: ", polygons);
 
 
       switch (dataType) {
@@ -627,7 +625,8 @@ reearth.ui.show(`
             let strokeProp = ({ "stroke": dataItem.point_outline_color || "#000000", "stroke-width": dataItem.point_outline_width || "3" });
             let radius = dataItem.point_size || "1500";
             let pointFill = dataItem.point_color || "yellow";
-            
+
+            console.log("case point:", points);
             overridePoinProperties(points, layerId, strokeProp, radius, pointFill);
           } else {
             alert("Please, choose correct Data Type")
@@ -638,6 +637,8 @@ reearth.ui.show(`
           break
 
         case 'icon':
+
+          iconCoords = Array()
           isInvalid = false;
           for (let i = 0; i < points.features.length; i++) {
             if ((points.features[i].geometry.type !== "Point" 
@@ -656,7 +657,7 @@ reearth.ui.show(`
             iconCoords.push(coord);
           })
 
-
+          console.log("case point:", points);
           overrideIconProperties(iconCoords, layerId, imageUrl, imageSize);
 
         } else {
@@ -677,6 +678,7 @@ reearth.ui.show(`
           let lineProp = ({ "stroke": dataItem.line_color || "yellow", "stroke-width": dataItem.line_width || "1" });
 
           if(!isInvalid) {
+            console.log("case line:", lines);
             overrideLineProperties(lines, layerId, lineProp);
           } else {
             alert("Please, choose correct Data Type")
@@ -699,8 +701,9 @@ reearth.ui.show(`
             // console.log(dataItem.polygon_color, dataItem.outline_color, dataItem.outline_width);
             let polygonFill = dataItem.polygon_color || "yellow";
             let polygonProp = ({ "stroke": dataItem.outline_color || "#000000", "stroke-width": "1" });
-            // console.log(polygon);
+            console.log(polygons);
 
+            console.log("case polygon:", polygons);
             overridePolygonProperties(polygons, layerId, polygonFill, polygonProp);
           } else {
             alert("Please, choose correct Data Type")
