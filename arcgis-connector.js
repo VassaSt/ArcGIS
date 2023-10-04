@@ -278,9 +278,13 @@ reearth.ui.show(`
 
           let itemEye = document.createElement('button');
           itemEye.classList.add('item-eye');
-          itemEye.classList.add('_show');
           itemEyeID = itemEyeID + i;
           itemEye.id = itemEyeID;
+          if (dataItem.visible){
+            itemEye.classList.add('_show');
+          } else {
+            itemEye.classList.add('_hide');
+          }
 
 
           layerList.appendChild(layerList__item);
@@ -339,11 +343,11 @@ reearth.ui.show(`
           }).then(function (response) {
             console.log(response)
             if (response.ok) {
-              // if(dataType == "kml") {
-              //   return response.text();
-              // } else {
+              if(dataType == "kml") {
+                return response.text();
+              } else {
                 return response.json();
-              // }
+              }
             } else {
               throw new Error("Could not reach the API" + response.statusText);
             }

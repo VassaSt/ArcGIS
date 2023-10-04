@@ -278,9 +278,13 @@ reearth.ui.show(`
 
           let itemEye = document.createElement('button');
           itemEye.classList.add('item-eye');
-          itemEye.classList.add('_show');
           itemEyeID = itemEyeID + i;
           itemEye.id = itemEyeID;
+          if (dataItem.visible){
+            itemEye.classList.add('_show');
+          } else {
+            itemEye.classList.add('_hide');
+          }
 
 
           layerList.appendChild(layerList__item);
