@@ -264,8 +264,7 @@ reearth.ui.show(`
           itemTitle__wrap.classList.add('item-title__wrap');
           itemTitle__wrap.id = itemID;
           itemTitle__wrap.setAttribute("data-type", dataItem.data_type);
-          let dataType = itemTitle__wrap.getAttribute("data-type");
-
+          let dataType = itemTitle__wrap.getAttribute("data-type")
 
 
           let itemMarker = document.createElement('div');
@@ -297,7 +296,6 @@ reearth.ui.show(`
           // console.log(found);
           if (!found) {
             dataStore.push({ itemId: itemID, layerId: "", arr: [], })
-            download(itemID, dataType);
           } else {
             // if item created push to dataStore layer Id
             let findItemId = dataStore.find(obj => obj.itemId === itemID)
@@ -317,8 +315,12 @@ reearth.ui.show(`
           document.getElementById('data-store').setAttribute('data-store', JSON.stringify(dataStore));
         }
 
-        function download(itemID, dataType) {
-          console.log(dataType);
+
+        function download(btn_id) {
+          let itemElm = document.getElementById(btn_id)
+          let dataType = itemElm.getAttribute("data-type")
+
+          let itemID = btn_id;
           
           let currentTime = new Date();
           let timeDiff = (currentTime.getTime() - startTime.getTime()) / 1000;
@@ -339,16 +341,15 @@ reearth.ui.show(`
           }).then(function (response) {
             console.log(response)
             if (response.ok) {
-              // if(dataType == "kml") {
-              //   return response.text();
-              // } else {
+              if(dataType == "kml") {
+                return response.text();
+              } else {
                 return response.json();
-              // }
+              }
             } else {
               throw new Error("Could not reach the API" + response.statusText);
             }
           }).then(function (data) {
-            console.log(data);
             if (!data.hasOwnProperty("errorMessage")) {
               if(dataType == "kml") {
                 let result = handleKMLFile(data)
@@ -379,33 +380,25 @@ reearth.ui.show(`
         }
         //  ./download
 
-        
-        // let download_btns = document.querySelectorAll('.item-title__wrap');
+        let download_btns = document.querySelectorAll('.item-title__wrap');
         // console.log("download_btns: ", download_btns);
 
-        // download_btns.forEach((elm) => {
-        //   let btn_id = elm.id
-        //   console.log(btn_id)
-        //   download(btn_id);
-        // })
+        let buttonPressed = e => {
+          var isButton = e.target.tagName;
+          let btn_id;
+          if (isButton === "BUTTON") {
+            btn_id = e.target.id;
+            console.log(btn_id);
+          } else {
+            btn_id = e.target.parentElement.closest('button').id;
+            console.log(btn_id);
+          }
+          download(btn_id);
+        }
 
-
-        // let buttonPressed = e => {
-        //   var isButton = e.target.tagName;
-        //   let btn_id;
-        //   if (isButton === "BUTTON") {
-        //     btn_id = e.target.id;
-        //     console.log(btn_id);
-        //   } else {
-        //     btn_id = e.target.parentElement.closest('button').id;
-        //     console.log(btn_id);
-        //   }
-        //   download(btn_id);
-        // }
-
-        // for (let download_btn of download_btns) {
-        //   download_btn.addEventListener("click", buttonPressed);
-        // }
+        for (let download_btn of download_btns) {
+          download_btn.addEventListener("click", buttonPressed);
+        }
 
       });
       //   ./forEach

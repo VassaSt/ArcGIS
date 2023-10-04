@@ -339,11 +339,11 @@ reearth.ui.show(`
           }).then(function (response) {
             console.log(response)
             if (response.ok) {
-              // if(dataType == "kml") {
-              //   return response.text();
-              // } else {
+              if(dataType == "kml") {
+                return response.text();
+              } else {
                 return response.json();
-              // }
+              }
             } else {
               throw new Error("Could not reach the API" + response.statusText);
             }
