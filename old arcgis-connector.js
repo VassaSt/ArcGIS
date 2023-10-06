@@ -597,6 +597,7 @@ reearth.ui.show(`
           // console.log("handle multipolygon")
           multi = true
         } else if (element.geometry.type == "Polygon") {
+          
           // console.log("handle polygonnn")
           element.properties["fill"] = polygonFill;
           element.properties["stroke-width"] = 0;
