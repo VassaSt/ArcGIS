@@ -131,3 +131,132 @@
           });
           
         } else 
+
+
+
+
+
+
+    function overridePolygonProperties(polygons, layerId, polygonFill, polygonProp) {
+      let lineString
+      let geoJson = turf.featureCollection([]);
+      let multi = turf.featureCollection([]);
+      let poly= turf.featureCollection([]);
+      console.log(polygons);
+
+      for (let i = 0; i < polygons.features.length; i++) {
+        if (polygons.features[i].geometry.type == "MultiPolygon") {
+          multi.features.push(polygons.features[i])
+          // console.log(multi);
+        } else {
+          poly.features.push(polygons.features[i])
+          // console.log(poly);
+        }
+      }
+// console.log(multi, poly);
+
+      // if (multi.features.length > 0){
+      //     turf.featureEach(multi, function (currentFeature, featureIndex) {
+      //     currentFeature.properties["fill"] = polygonFill;
+      //     let multipoligonCoords = turf.getCoords(currentFeature);
+      //     turf.featureEach(multipoligonCoords, function (feature, featureIndex) {
+      //     let line = turf.multiLineString(turf.getCoords(feature)[0]);
+      //     line.properties = polygonProp;
+      //     console.log("line: ", line);
+      //     multi.features.push(line);
+
+      //     })
+      //   })
+      //   console.log(multi);
+      // }
+
+      // if (poly.features.length > 0) {
+      //   turf.featureEach(poly, function (currentFeature, featureIndex) {
+      //     currentFeature.properties["fill"] = polygonFill;
+      //     currentFeature.properties["stroke-width"] = 0;
+      //     linestring = turf.lineString(turf.getCoords(currentFeature)[0])
+      //     linestring.properties["stroke"] = polygonProp.stroke;
+      //     poly.features.push(linestring);
+      //   })
+      //   console.log(poly.features.length);
+      //   }
+
+
+      // overriding properties by type MultiPolygon or Polygon
+        // console.log("elm:", element)
+        // if (element.geometry.type == "MultiPolygon") {
+          // console.log("handle multipolygon")
+
+          turf.featureEach(multi, function (currentFeature) {
+          currentFeature.properties["fill"] = polygonFill;
+          let multipoligonCoords = turf.getCoords(currentFeature);
+          multipoligonCoords.forEach((e) => {
+            let line = turf.multiLineString(turf.getCoords(e));
+          line.properties = polygonProp;
+          geoJson.features.push(currentFeature);
+          geoJson.features.push(line);
+          })
+        });
+
+        // } else 
+        
+        // if (element.geometry.type == "Polygon") {
+          // console.log("handle polygonnn")
+          turf.featureEach(poly, function (currentFeature, featureIndex) {
+            currentFeature.properties["fill"] = polygonFill;
+            currentFeature.properties["stroke-width"] = 0;
+          linestring = turf.lineString(turf.getCoords(currentFeature)[0])
+          linestring.properties["stroke"] = polygonProp.stroke
+          geoJson.features.push(currentFeature);
+          geoJson.features.push(linestring);
+
+        })
+
+
+      // multi.features.map((element) => {
+      //   geoJson.features.push(element)
+      // });
+
+      // poly.features.map((element) => {
+      //   geoJson.features.push(element)
+      // });
+
+
+      // geoJson.features.push(poly.features, multi.features);
+
+
+console.log("geoJson :", geoJson);
+
+      // console.log("Polygon geoJson :", geoJson);
+      // console.log("layerId :", layerId);
+
+      parent.postMessage({ type: "Properties", layerId, geoJson }, "*");
+    }
+    //  ./overridePolygonProperties
+
+
+
+      if ((data.type == "FeatureCollection")) {
+        let polygonProp = ({ "stroke": "#000000", "stroke-width": "2" });
+        let geoJson = turf.featureCollection([]);
+        data.features.map((element) => {
+          if (element.geometry.type == "MultiPolygon") {
+
+            turf.featureEach(data, function (currentFeature) {
+              currentFeature.properties["fill"] = "yellow";
+              let multipoligonCoords = turf.getCoords(currentFeature);
+              multipoligonCoords.forEach((e) => {
+                let line = turf.multiLineString(turf.getCoords(e)[0]);
+                line.properties = polygonProp;
+                geoJson.features.push(currentFeature);
+                geoJson.features.push(line);
+              })
+            });
+          }
+          console.log(geoJson);
+          // data = geoJson;
+        });
+
+
+        // muliPoligon
+      }

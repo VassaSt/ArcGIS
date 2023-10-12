@@ -134,7 +134,8 @@ extensions:
           - id: visible
             title: Visible
             type: bool
-            value: true
+            defaultValue: true
+
 
 
 
