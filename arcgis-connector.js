@@ -375,14 +375,10 @@ reearth.ui.show(`
 
             // hide and show layers turn on/off visible button in widget
             if (dataItem.visible === true || dataItem.visible === undefined) {
-              console.log("!dataItem.visible: ", !dataItem.visible);
-              console.log("dataItem.visible: ", dataItem.visible);
               itemEye.classList.remove('_hide');
               itemEye.classList.add('_show');
               reearth.layers.show(layerId);
             } else {
-              console.log("!dataItem.visible: ", !dataItem.visible);
-              console.log("dataItem.visible: ", dataItem.visible);
               itemEye.classList.remove('_show');
               itemEye.classList.add('_hide');
               reearth.layers.hide(layerId);
