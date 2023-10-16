@@ -20,7 +20,11 @@ extensions:
               value: custom
             - id: URL
               type: string
-              title: URL
+              title: API Gateway URL
+              value: custom
+            - id: arcgis_URL
+              type: string
+              title: ArcGIS URL
               value: custom
         - id: data_list
           list: true

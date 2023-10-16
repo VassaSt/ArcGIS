@@ -169,6 +169,7 @@ reearth.ui.show(`
 
 
     let API_URL
+    let ARCGIS_URL
     let client_id
     let client_secret
 
@@ -193,6 +194,7 @@ reearth.ui.show(`
       if (JSON.stringify(property) != JSON.stringify(newProperty)) {
         property = newProperty;
         API_URL = property.client_data.URL;
+        ARCGIS_URL = property.client_data.arcgis_URL;
         client_id = property.client_data.client_ID;
         client_secret = property.client_data.client_secret;
         token_url = TokenURL + "?client_id=" + client_id + "&grant_type=client_credentials&client_secret=" + client_secret;
@@ -200,11 +202,10 @@ reearth.ui.show(`
         get_token().then(() => {
           handleData(property);
         });
-        // add function to delete layers( hide or ovrride to empty)
       }
     });
 
-    function get_token() {
+   async function get_token() {
       return new Promise((resolve, reject) => {
         fetch(token_url)
           .then(function (response) {
@@ -226,24 +227,38 @@ reearth.ui.show(`
       });
     }
 
-
-    // 
+    // hide layers if item deleted from Data List
     function hideLayers(list) {
-      console.log("list: ", list);
+      // console.log("list: ", list);
       if (!list || 0 === list.length) {
         let filteredLayers = layers.filter(layer => layer.id)
-        console.log("filteredLayers: ", filteredLayers);
+        // console.log("filteredLayers: ", filteredLayers);
         filteredLayers.forEach(layer => {
           reearth.layers.hide(layer.id)
-        });
+          let layerId = layer.id;
+        //   reearth.layers.overrideProperty(layerId, {
+        //   default: {
+        //     url: [],
+        //   },
+        // });
+
+          // parent.postMessage({ type: "delete", layerId }, "*");
+        })
       } else {
         const list_id = list.map(obj => obj.id);
-        console.log("list_id: ", list_id);
+        // console.log("list_id: ", list_id);
         // layers => layer.title !== list_id then do something
         let filteredLayers = layers.filter(layer => !list_id.includes(layer.id));
-        console.log(filteredLayers);
+        // console.log(filteredLayers);
         filteredLayers.forEach(layer => {
           reearth.layers.hide(layer.id)
+          let layerId = layer.id;
+        //   reearth.layers.overrideProperty(layerId, {
+        //   default: {
+        //     url: [],
+        //   },
+        // });
+          // parent.postMessage({ type: "delete", layerId }, "*");
         });
       }
     }
@@ -259,15 +274,10 @@ reearth.ui.show(`
         getToken();
         startTime = new Date();
       }
-      let API_URL_fix = API_URL;
-      if (API_URL.match("arcgis.com")) {
-        API_URL_fix = API_URL + "/sharing/rest/content/items/" + itemID + "/data";
-      }
-      // console.log("API_URL_fix: " + API_URL_fix);
-      fetch(API_URL_fix, {
+      fetch(API_URL, {
         method: 'POST',
         headers: param,
-        body: JSON.stringify({ "id": itemID })
+        body: JSON.stringify({ "id": itemID, "arcgis_url": ARCGIS_URL })
       }).then(function (response) {
         if (response.ok) {
           if (dataType == "kml") {
@@ -337,6 +347,7 @@ reearth.ui.show(`
           itemTitle__wrap.id = itemID;
           itemTitle__wrap.setAttribute("data-type", dataItem.data_type);
           let dataType = itemTitle__wrap.getAttribute("data-type")
+          console.log("dataItem: ", dataItem);
 
 
           let itemMarker = document.createElement('div');
@@ -358,7 +369,7 @@ reearth.ui.show(`
           itemTitle__wrap.appendChild(itemMarker);
           itemTitle__wrap.appendChild(itemTitle);
           layerList__item.appendChild(itemEye);
-
+          
           //  push to dataStore item id for each item from layer list, as layer list created every time new, needs some date to store them 
           let found = dataStore.some(obj => obj.itemId == itemID)
           // console.log(found);
@@ -371,7 +382,7 @@ reearth.ui.show(`
             let layerId = findItemId.layerId;
             layerList__item.id = layerId;
 
-            console.log(dataItem.visible);
+            // console.log(dataItem.visible);
 
             // hide and show layers turn on/off visible button in widget
             if (dataItem.visible === true || dataItem.visible === undefined) {
@@ -387,7 +398,7 @@ reearth.ui.show(`
 
             if (layerId && dataItem.data_type !== "default" && dataItem.data_type !== "kml") {
               // console.log(layerId);
-              // getting layer Id and data type to override properties, if file downloaded already
+              // getting layer Id and data type to override properties, if file already downloaded
               let geoJsonData = reearth.layers.findById(layerId).property.default.url;
               // console.log("geoJsonData getted  from reearth: ", geoJsonData);
 
@@ -421,7 +432,7 @@ reearth.ui.show(`
                 duration: 2
               });
             } else {
-              // console.log(kml);
+              console.log(kml);
             }
           }
         }
@@ -434,7 +445,7 @@ reearth.ui.show(`
       let handleLayer = e => {
         let layer_id = e.target.parentElement.id;
         reearth.layers.layers;
-        console.log(e.target);
+        // console.log(e.target);
 
         var btnClass = e.target.classList;
         // console.log(btnClass);
@@ -449,9 +460,9 @@ reearth.ui.show(`
               reearth.layers.hide(markerId);
             });
           }
-
           btnClass.remove('_show');
           btnClass.add('_hide');
+
         } else {
           reearth.layers.show(layer_id);
 
@@ -464,6 +475,7 @@ reearth.ui.show(`
           }
           btnClass.remove('_hide');
           btnClass.add('_show');
+
         }
       }
 
@@ -477,38 +489,37 @@ reearth.ui.show(`
 
     let geojsonLayerId
     function showGeojson(data, center, itemID, dataType) {
-      
+
       if ((data.type == "FeatureCollection")) {
-      let lineString
-      let geoJson = turf.featureCollection([]);
-      let multi = turf.featureCollection([]);
-      let poly = turf.featureCollection([]);
-      let polygonProp = ({ "stroke": "#000000", "stroke-width": "1" });
 
-      for (let i = 0; i < data.features.length; i++) {
-        if (data.features[i].geometry.type == "MultiPolygon") {
-          multi.features.push(data.features[i])
-        } else if (data.features[i].geometry.type == "Polygon"){
-          poly.features.push(data.features[i])
+        let multi = turf.featureCollection([]);
+        let poly = turf.featureCollection([]);
+        let polygonProp = ({ "stroke": "#000000", "stroke-width": "1" });
+
+        for (let i = 0; i < data.features.length; i++) {
+          if (data.features[i].geometry.type == "MultiPolygon") {
+            multi.features.push(data.features[i])
+          } else if (data.features[i].geometry.type == "Polygon") {
+            poly.features.push(data.features[i])
+          }
         }
-      }
 
-      turf.featureEach(multi, function (currentFeature) {
-        let multipoligonCoords = turf.getCoords(currentFeature);
-        multipoligonCoords.forEach((e) => {
-          let line = turf.multiLineString(turf.getCoords(e));
-          line.properties = polygonProp;
-          data.features.push(line);
+        turf.featureEach(multi, function (currentFeature) {
+          let multipoligonCoords = turf.getCoords(currentFeature);
+          multipoligonCoords.forEach((e) => {
+            let line = turf.multiLineString(turf.getCoords(e));
+            line.properties = polygonProp;
+            data.features.push(line);
+          })
+        });
+
+        turf.featureEach(poly, function (currentFeature) {
+          currentFeature.properties["stroke-width"] = 0;
+          let linestring = turf.lineString(turf.getCoords(currentFeature)[0])
+          linestring.properties["stroke"] = polygonProp.stroke
+          data.features.push(linestring);
         })
-      });
-
-      turf.featureEach(poly, function (currentFeature) {
-        currentFeature.properties["stroke-width"] = 0;
-        linestring = turf.lineString(turf.getCoords(currentFeature)[0])
-        linestring.properties["stroke"] = polygonProp.stroke
-        data.features.push(linestring);
-      })
-    }
+      }
 
 
       geojsonLayerId = reearth.layers.add({
@@ -544,7 +555,7 @@ reearth.ui.show(`
 
     // override properties from default point marker or icon to circle
     function overridePoinProperties(points, layerId, strokeProp, radius, pointFill) {
-      // multi = false;
+
       let geoJson = turf.featureCollection([]);
       var center;
       var options;
@@ -563,7 +574,7 @@ reearth.ui.show(`
               options = { steps: 20, units: 'meters' };
               circle = turf.circle(center, radius, options);
               circle.properties["fill"] = pointFill;
-              console.log("coords MultiPoint", circle);
+              // console.log("coords MultiPoint", circle);
 
               line = turf.polygonToLine(circle);
               // console.log(line)
@@ -582,7 +593,7 @@ reearth.ui.show(`
             options = { steps: 20, units: 'meters' };
             circle = turf.circle(center, radius, options);
             circle.properties["fill"] = pointFill;
-            console.log("coords point", center);
+            // console.log("coords point", center);
 
             line = turf.polygonToLine(circle);
             // console.log(line)
@@ -627,7 +638,7 @@ reearth.ui.show(`
               }
             }
           });
-
+          reearth.layers.show(markerId);
           let findlayerId = dataStore.find(obj => obj.layerId === layerId)
           if (findlayerId) {
             findlayerId.arr.push(markerId);
@@ -646,6 +657,7 @@ reearth.ui.show(`
           });
         });
       }
+
     }
     //  ./overrideIconProperties
 
@@ -664,12 +676,12 @@ reearth.ui.show(`
     //  ./overrideLineProperties
 
     function overridePolygonProperties(polygons, layerId, polygonFill, polygonProp) {
-      
+
       let lineString
       let geoJson = turf.featureCollection([]);
       let multi = turf.featureCollection([]);
       let poly = turf.featureCollection([]);
-      console.log(polygons);
+      // console.log(polygons);
 
       for (let i = 0; i < polygons.features.length; i++) {
         if (polygons.features[i].geometry.type == "MultiPolygon") {
@@ -740,6 +752,7 @@ reearth.ui.show(`
       switch (dataType) {
         case 'point':
           isInvalid = false;
+          console.log("points: ", points);
 
           if (points.features.length === 0) {
             isInvalid = true
@@ -778,6 +791,8 @@ reearth.ui.show(`
 
         case 'icon':
 
+          console.log("points: ", points);
+
           iconCoords = Array()
           isInvalid = false;
           let coord;
@@ -793,23 +808,18 @@ reearth.ui.show(`
 
             points.features.map((element) => {
               if (element.geometry.type == "MultiPoint") {
-                turf.featureEach(points, function (currentFeature, featureIndex) {
-
-                  multipoints = turf.getCoords(currentFeature);
-                  multipoints.forEach((el) => {
-                    coord = turf.getCoord(el);
-                    iconCoords.push(coord);
-                  })
-                });
-              } else if (element.geometry.type == "Point") {
-                points.features.forEach((point) => {
-                  coord = point.geometry.coordinates
+                multipoints = turf.getCoords(element);
+                multipoints.forEach((el) => {
+                  coord = turf.getCoord(el);
                   iconCoords.push(coord);
                 })
+              } else if (element.geometry.type == "Point") {
+                coord = element.geometry.coordinates
+                iconCoords.push(coord);
               }
             })
 
-            // console.log("iconCoords:", iconCoords);
+            console.log("iconCoords:", iconCoords);
 
             overrideIconProperties(iconCoords, layerId, imageUrl, imageSize);
 
@@ -824,6 +834,8 @@ reearth.ui.show(`
 
         case 'line':
           isInvalid = false;
+
+          console.log("lines: ", lines);
 
           if (lines.features.length === 0) {
             isInvalid = true
@@ -856,6 +868,8 @@ reearth.ui.show(`
         case 'polygon':
 
           isInvalid = false;
+
+          console.log("polygons: ", polygons);
 
           if (polygons.features.length === 0) {
             isInvalid = true
@@ -897,19 +911,19 @@ reearth.ui.show(`
       // hide and show markers' layers to turn on/off visible button in widget
       let findlayerId = dataStore.find(obj => obj.layerId === layerId);
       if (findlayerId && findlayerId.arr.length > 0) {
-        if (!dataItem.visible) {
-          findlayerId.arr.forEach((element) => {
-            let markerId = element;
-            reearth.layers.hide(markerId);
-          });
-        } else {
+        if (dataItem.visible === true || dataItem.visible === undefined) {
           findlayerId.arr.forEach((element) => {
             let markerId = element;
             reearth.layers.show(markerId);
           });
+        } else {
+          findlayerId.arr.forEach((element) => {
+            let markerId = element;
+            reearth.layers.hide(markerId);
+          });
         }
-
       }
+
 
     }
     //  ./overrideProperties
@@ -980,3 +994,13 @@ reearth.ui.show(`
   })
   }
   })
+
+  reearth.on("message", (msg) => {
+    if (msg.type == "delete") {
+    reearth.layers.overrideProperty(msg.layerId, {
+    default: {
+    url: [],
+    },
+    })
+    }
+    })
