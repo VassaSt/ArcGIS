@@ -163,6 +163,7 @@ reearth.ui.show(`
       itemId: "",
       layerId: "",
       arr: [],
+      centerPoint: [],
     });
 
     let iconCoords = Array();
@@ -205,7 +206,7 @@ reearth.ui.show(`
       }
     });
 
-   async function get_token() {
+    async function get_token() {
       return new Promise((resolve, reject) => {
         fetch(token_url)
           .then(function (response) {
@@ -236,13 +237,7 @@ reearth.ui.show(`
         filteredLayers.forEach(layer => {
           reearth.layers.hide(layer.id)
           let layerId = layer.id;
-        //   reearth.layers.overrideProperty(layerId, {
-        //   default: {
-        //     url: [],
-        //   },
-        // });
 
-          // parent.postMessage({ type: "delete", layerId }, "*");
         })
       } else {
         const list_id = list.map(obj => obj.id);
@@ -253,17 +248,11 @@ reearth.ui.show(`
         filteredLayers.forEach(layer => {
           reearth.layers.hide(layer.id)
           let layerId = layer.id;
-        //   reearth.layers.overrideProperty(layerId, {
-        //   default: {
-        //     url: [],
-        //   },
-        // });
-          // parent.postMessage({ type: "delete", layerId }, "*");
         });
       }
     }
 
-    function download(itemID) {
+    function download(itemID, dataItem) {
       let itemElm = document.getElementById(itemID)
       let dataType = itemElm.getAttribute("data-type")
 
@@ -293,12 +282,12 @@ reearth.ui.show(`
           if (dataType == "kml") {
             let result = handleKMLFile(data)
             // console.log("result kml:", result)
-            showGeojson(result.data, result.centerPoint, itemID, "kml")
+            showGeojson(result.data, result.centerPoint, itemID, dataType, dataItem)
           } else {
             let geojsonData = data;
             // console.log("result geojsonData :", geojsonData);
             let center = turf.center(geojsonData);
-            showGeojson(geojsonData, center, itemID, "geojson")
+            showGeojson(geojsonData, center, itemID, dataType, dataItem)
           }
         } else {
           //Show error
@@ -347,8 +336,6 @@ reearth.ui.show(`
           itemTitle__wrap.id = itemID;
           itemTitle__wrap.setAttribute("data-type", dataItem.data_type);
           let dataType = itemTitle__wrap.getAttribute("data-type")
-          console.log("dataItem: ", dataItem);
-
 
           let itemMarker = document.createElement('div');
           itemMarker.classList.add('item-marker');
@@ -369,13 +356,13 @@ reearth.ui.show(`
           itemTitle__wrap.appendChild(itemMarker);
           itemTitle__wrap.appendChild(itemTitle);
           layerList__item.appendChild(itemEye);
-          
+
           //  push to dataStore item id for each item from layer list, as layer list created every time new, needs some date to store them 
           let found = dataStore.some(obj => obj.itemId == itemID)
           // console.log(found);
           if (!found) {
-            dataStore.push({ itemId: itemID, layerId: "", arr: [], })
-            download(itemID);
+            dataStore.push({ itemId: itemID, layerId: "", arr: [], centerPoint: [], })
+            download(itemID, dataItem);
           } else {
             // if item created push to dataStore layer Id
             let findItemId = dataStore.find(obj => obj.itemId === itemID)
@@ -417,13 +404,18 @@ reearth.ui.show(`
           function moveCamera() {
             let layerId = itemTitle__wrap.parentElement.id
             let file = reearth.layers.findById(layerId).property.default.url;
+            console.log(file);
 
-
-            if (file.type == "FeatureCollection") {
-              // console.log("handle multipolygon")
+            if ((file.type == "FeatureCollection") && (file.features[0].geometry.name === "markers")) {
+              reearth.camera.flyTo({
+                lat: file.features[0].geometry.coordinates[1],
+                lng: file.features[0].geometry.coordinates[0],
+                height: 50000
+              }, {
+                duration: 2
+              });
+            } else if ((file.type == "FeatureCollection") && (file.features[0].geometry.type))  {
               let center = turf.center(file);
-              // console.log(file);
-
               reearth.camera.flyTo({
                 lat: center.geometry.coordinates[1],
                 lng: center.geometry.coordinates[0],
@@ -432,7 +424,16 @@ reearth.ui.show(`
                 duration: 2
               });
             } else {
-              console.log(kml);
+              console.log("kml: ", file);
+              let findItemId = dataStore.find(obj => obj.itemId == itemID);
+              let center = findItemId.centerPoint
+              reearth.camera.flyTo({
+                lat: center[1],
+                lng: center[0],
+                height: 50000
+              }, {
+                duration: 2
+              });
             }
           }
         }
@@ -488,23 +489,31 @@ reearth.ui.show(`
     //  ./handleData
 
     let geojsonLayerId
-    function showGeojson(data, center, itemID, dataType) {
+    function showGeojson(data, center, itemID, dataType, dataItem) {
+
+      let geoJson = turf.featureCollection([]);
+      let url;
 
       if ((data.type == "FeatureCollection")) {
 
-        let multi = turf.featureCollection([]);
+        let multiPolygon = turf.featureCollection([]);
         let poly = turf.featureCollection([]);
+        let lines = turf.featureCollection([]);
+        let points = turf.featureCollection([]);
+        let multiPoints = turf.featureCollection([]);
+
         let polygonProp = ({ "stroke": "#000000", "stroke-width": "1" });
 
+        // MultiPolygon and Polygon are rewriting to prevent a bug with a data visualization
         for (let i = 0; i < data.features.length; i++) {
           if (data.features[i].geometry.type == "MultiPolygon") {
-            multi.features.push(data.features[i])
+            multiPolygon.features.push(data.features[i])
           } else if (data.features[i].geometry.type == "Polygon") {
             poly.features.push(data.features[i])
           }
         }
 
-        turf.featureEach(multi, function (currentFeature) {
+        turf.featureEach(multiPolygon, function (currentFeature) {
           let multipoligonCoords = turf.getCoords(currentFeature);
           multipoligonCoords.forEach((e) => {
             let line = turf.multiLineString(turf.getCoords(e));
@@ -516,19 +525,195 @@ reearth.ui.show(`
         turf.featureEach(poly, function (currentFeature) {
           currentFeature.properties["stroke-width"] = 0;
           let linestring = turf.lineString(turf.getCoords(currentFeature)[0])
-          linestring.properties["stroke"] = polygonProp.stroke
+          linestring.properties["stroke"] = "#000000";
           data.features.push(linestring);
         })
+
+        // for publishing project with correct data type dividing and rewrited properties
+        for (let i = 0; i < data.features.length; i++) {
+          if ((data.features[i].geometry.type == "LineString") || (data.features[i].geometry.type == "MultiLineString")) {
+            lines.features.push(data.features[i]);
+          } else if (data.features[i].geometry.type === "Point") {
+            points.features.push(data.features[i]);
+          } else if (data.features[i].geometry.type === "MultiPoint") {
+            multiPoints.features.push(data.features[i]);
+          }
+        }
+
+        switch (dataType) {
+
+          case "point":
+            console.log(dataType);
+            console.log(points, multiPoints);
+
+            let options = { steps: 20, units: 'meters' };
+            var circle;
+            var border;
+
+            let strokeProp = ({ "stroke": dataItem.point_outline_color || "#000000", "stroke-width": dataItem.point_outline_width || "2" });
+            let radius = dataItem.point_size || "1500";
+            let pointFill = dataItem.point_color || "yellow";
+
+            // console.log("elm:", element)
+
+            turf.featureEach(multiPoints, function (currentFeature, featureIndex) {
+              let multipoints = turf.getCoords(currentFeature);
+              multipoints.forEach((el) => {
+                let center = turf.getCoords(el);
+                circle = turf.circle(center, radius, options);
+                circle.properties["fill"] = pointFill;
+                // console.log("coords MultiPoint", circle);
+
+                border = turf.polygonToLine(circle);
+                border.properties = strokeProp;
+                geoJson.features.push(circle);
+                geoJson.features.push(border);
+              })
+            });
+
+            turf.featureEach(points, function (currentFeature, featureIndex) {
+              let center = turf.getCoord(currentFeature);
+              circle = turf.circle(center, radius, options);
+              circle.properties["fill"] = pointFill;
+              // console.log("coords point", center);
+
+              border = turf.polygonToLine(circle);
+              border.properties = strokeProp;
+              geoJson.features.push(circle);
+              geoJson.features.push(border);
+            });
+
+            // 
+            dataType = "geojson"
+            url = geoJson
+            break;
+
+          case "icon":
+            console.log(dataType);
+            // console.log(points, multiPoints);
+            dataType = "geojson"
+
+            let iconCoords = Array();
+            let imageUrl = dataItem.image_URL
+            let imageSize = dataItem.image_size || "1";
+
+            multiPoints.features.map((element) => {
+              let multipoints = turf.getCoords(element);
+              multipoints.forEach((el) => {
+                let coord = turf.getCoord(el);
+                iconCoords.push(coord);
+                let geometry = ({ "name": "markers", "coordinates": coord });
+                geoJson.features.push(turf.feature(geometry));
+              })
+            })
+
+            points.features.map((element) => {
+              let coord = element.geometry.coordinates
+              iconCoords.push(coord);
+              let geometry = ({ "name": "markers", "coordinates": coord });
+              geoJson.features.push(turf.feature(geometry));
+            })
+
+            iconCoords.forEach((element) => {
+
+              let long = element[0];
+              let lat = element[1];
+
+              let markerId = reearth.layers.add({
+                extensionId: "marker",
+                isVisible: true,
+                title: "marker",
+                property: {
+                  default: {
+                    image: imageUrl,
+                    imageSize: imageSize,
+                    heightReference: "clamp",
+                    location: {
+                      lat: lat,
+                      lng: long,
+                    },
+                  }
+                }
+              });
+
+              let findItemId = dataStore.find(obj => obj.itemId == itemID)
+              if (findItemId) {
+                findItemId.arr.push(markerId);
+              }
+            })
+
+            url = geoJson
+            break;
+
+          case "line":
+            console.log("line: ", lines);
+
+            let lineProp = ({ "stroke": dataItem.line_color, "stroke-width": dataItem.line_width || "1" });
+
+            lines.features.forEach((line) => {
+              line.properties = lineProp;
+              geoJson.features.push(line);
+            })
+            url = geoJson
+            dataType = "geojson"
+            break;
+
+          case "polygon":
+            console.log(multiPolygon, poly);
+
+            // getting properties data from widget (dataItem... ) and implement them to the features properties
+            let polygonProp = ({ "stroke": dataItem.outline_color, "stroke-width": "1", });
+
+            turf.featureEach(multiPolygon, function (currentFeature) {
+              currentFeature.properties["fill"] = dataItem.polygon_color;
+              geoJson.features.push(currentFeature);
+              let multipoligonCoords = turf.getCoords(currentFeature);
+              multipoligonCoords.forEach((e) => {
+                let line = turf.multiLineString(turf.getCoords(e));
+                line.properties = polygonProp;
+                geoJson.features.push(line);
+              })
+            });
+
+            turf.featureEach(poly, function (currentFeature) {
+              currentFeature.properties["fill"] = dataItem.polygon_color;
+              currentFeature.properties["stroke-width"] = 0;
+              geoJson.features.push(currentFeature);
+              let linestring = turf.lineString(turf.getCoords(currentFeature)[0])
+              linestring.properties["stroke"] = dataItem.outline_color;
+              geoJson.features.push(linestring);
+            })
+
+            console.log("geoJson polygons", geoJson);
+
+            url = geoJson;
+            dataType = "geojson"
+            break;
+
+          default:
+            console.log("default: ", data);
+            dataType = "geojson"
+            url = data
+            break;
+        }
+      } else {
+        dataType = "kml"
+        url = data;
+        // push centerPoint data to Data store to control camera moving with ui button 
+        let findItemId = dataStore.find(obj => obj.itemId == itemID);
+        let centerPoint = center.geometry.coordinates
+        findItemId.centerPoint = centerPoint;
       }
+      // console.log("geoJson coord: ", url);
 
-
+      // upload geojson or kml file
       geojsonLayerId = reearth.layers.add({
         extensionId: "resource",
         isVisible: true,
         title: dataType,
         property: {
           default: {
-            url: data,
+            url: url,
             type: dataType,
             clampToGround: true
           },
@@ -543,12 +728,12 @@ reearth.ui.show(`
         duration: 2
       });
 
-      // pudh layer id to dataStore
-      let findItemId = dataStore.find(obj => obj.itemId == itemID)
+      let findItemId = dataStore.find(obj => obj.itemId == itemID);
+      // push layer id to dataStore
       findItemId.layerId = geojsonLayerId;
-      // console.log("findItemId: ",findItemId)
-      document.getElementById(itemID).parentElement.setAttribute('id', geojsonLayerId);
 
+      // console.log("findItemId: ",findItemId)
+      document.getElementById(itemID).parentElement.setAttribute('id', geojsonLayerId)
     };
     //  ./showGeojson
 
@@ -558,7 +743,7 @@ reearth.ui.show(`
 
       let geoJson = turf.featureCollection([]);
       var center;
-      var options;
+      var options = { steps: 20, units: 'meters' };
       var circle;
       var line;
       let multipoints;
@@ -571,7 +756,6 @@ reearth.ui.show(`
             multipoints = turf.getCoords(currentFeature);
             multipoints.forEach((el) => {
               center = turf.getCoords(el);
-              options = { steps: 20, units: 'meters' };
               circle = turf.circle(center, radius, options);
               circle.properties["fill"] = pointFill;
               // console.log("coords MultiPoint", circle);
@@ -590,7 +774,7 @@ reearth.ui.show(`
           turf.featureEach(points, function (currentFeature, featureIndex) {
 
             center = turf.getCoord(currentFeature);
-            options = { steps: 20, units: 'meters' };
+            console.log(center);
             circle = turf.circle(center, radius, options);
             circle.properties["fill"] = pointFill;
             // console.log("coords point", center);
@@ -602,6 +786,15 @@ reearth.ui.show(`
             geoJson.features.push(line);
           });
 
+        } else if (element.geometry.name === "markers") {
+          let coords = element.geometry.coordinates;
+          circle = turf.circle(coords, radius, options);
+          circle.properties["fill"] = pointFill;
+
+          line = turf.polygonToLine(circle);
+          line.properties = strokeProp;
+          geoJson.features.push(circle);
+          geoJson.features.push(line);
         }
       });
 
@@ -735,7 +928,7 @@ reearth.ui.show(`
 
       // sort features by type
       for (let i = 0; i < geoJsonData.features.length; i++) {
-        if ((geoJsonData.features[i].geometry.type === "Point") || (geoJsonData.features[i].geometry.type === "MultiPoint")) {
+        if ((geoJsonData.features[i].geometry.type === "Point") || (geoJsonData.features[i].geometry.type === "MultiPoint") || (geoJsonData.features[i].geometry.name === "markers")) {
           points.features.push(geoJsonData.features[i]);
         } else if ((geoJsonData.features[i].geometry.type === "LineString") || (geoJsonData.features[i].geometry.type === "MultiLineString")) {
           lines.features.push(geoJsonData.features[i]);
@@ -743,7 +936,6 @@ reearth.ui.show(`
           polygons.features.push(geoJsonData.features[i]);
         }
       }
-
       // console.log("points: ", points);
       // console.log("lines: ", lines);
       // console.log("polygons: ", polygons);
@@ -813,7 +1005,7 @@ reearth.ui.show(`
                   coord = turf.getCoord(el);
                   iconCoords.push(coord);
                 })
-              } else if (element.geometry.type == "Point") {
+              } else if ((element.geometry.type == "Point") || (element.geometry.name === "markers")) {
                 coord = element.geometry.coordinates
                 iconCoords.push(coord);
               }
@@ -923,8 +1115,6 @@ reearth.ui.show(`
           });
         }
       }
-
-
     }
     //  ./overrideProperties
 
@@ -933,6 +1123,7 @@ reearth.ui.show(`
       //Handle KML file
       let parser = new DOMParser();
       let kmlDoc = parser.parseFromString(data, "application/xml");
+      // console.log("kmlDoc: ", kmlDoc);
 
       //Check valid href tag exist on data
       let hrefTags = kmlDoc.getElementsByTagName("href")
@@ -950,7 +1141,10 @@ reearth.ui.show(`
 
       //Blob
       const blob = new Blob([newXmlStr], { type: 'text/xml;charset=utf-8;' });
+      // console.log("handleKMLFile(data) blob: ", blob)
+
       let result = URL.createObjectURL(blob);
+      // console.log("handleKMLFile(data) result: ", result)
 
       let geojson = toGeoJSON.kml(kmlDoc)
       let center = turf.center(geojson);
@@ -994,13 +1188,3 @@ reearth.ui.show(`
   })
   }
   })
-
-  reearth.on("message", (msg) => {
-    if (msg.type == "delete") {
-    reearth.layers.overrideProperty(msg.layerId, {
-    default: {
-    url: [],
-    },
-    })
-    }
-    })
