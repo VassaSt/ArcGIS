@@ -139,6 +139,10 @@ extensions:
             title: Visible
             type: bool
             defaultValue: true
+          - id: clampToGround
+            type: bool
+            title: Clamp to ground
+            defaultValue: false
 
 
 
