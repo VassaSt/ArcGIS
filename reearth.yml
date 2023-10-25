@@ -44,7 +44,7 @@ extensions:
             title: Data Type
             choices:
               - key: default
-                label: Choose type
+                label: Default GeoJson
               - key: point
                 label: Point(color)
               - key: icon
