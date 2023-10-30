@@ -143,6 +143,18 @@ extensions:
             type: bool
             title: Clamp to ground
             defaultValue: false
+        - id: customize
+          title: Customize
+          fields:
+            - id: theme
+              type: string
+              title: Theme
+              defaultValue: light
+              choices:
+                - key: dark
+                  label: Dark
+                - key: light
+                  label: Light
 
 
 
