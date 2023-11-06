@@ -347,7 +347,7 @@ reearth.ui.show(`
     let startTime = new Date();
 
     // expireIn indicate token validity period. 60 is for debugging. It should be 7000 in actual operation.
-    const expireIn = 60;
+    const expireIn = 7000;
 
     let dataStore = [];
     dataStore.push({
@@ -772,7 +772,6 @@ reearth.ui.show(`
                   clampToGround: dataItem.clampToGround,
                 },
               })
-
             }
           }
 
@@ -907,10 +906,8 @@ reearth.ui.show(`
       findItemId.centerPoint = centerPoint;
 
       let cameraHeight = height;
-      // console.log(cameraHeight);
       let geoJson = turf.featureCollection([]);
       let url;
-
 
       if ((data.type == "FeatureCollection")) {
 
@@ -965,7 +962,7 @@ reearth.ui.show(`
         let multipointsArea = turf.area(turf.envelope(multiPoints)) || 0;
         let pointsLength = pointsArea + multipointsArea;
 
-        // count math square to get diagonal with formula d = √2a this will be the height for camera
+        // count math square to get diagonal with formula d = √2a, this will be the height for camera
         cameraHeight = Math.round(Math.sqrt(2 * (area + linesLength + pointsLength)));
 
         findItemId.cameraHeight = cameraHeight;
@@ -1018,7 +1015,6 @@ reearth.ui.show(`
             break;
 
           case "icon":
-            dataType = "geojson"
 
             let iconCoords = Array();
             let imageUrl = dataItem.image_URL
@@ -1069,7 +1065,8 @@ reearth.ui.show(`
               }
             })
 
-            url = geoJson
+            url = geoJson;
+            dataType = "geojson";
             break;
 
           case "line":
@@ -1113,8 +1110,8 @@ reearth.ui.show(`
             break;
 
           default:
-            dataType = "geojson"
-            url = data
+            dataType = "geojson";
+            url = data;
             break;
         }
       } else {
@@ -1339,7 +1336,6 @@ reearth.ui.show(`
     function overrideProperties(geoJsonData, dataItem, layerId) {
       // let icon = document.getElementById(layerId).querySelector('.item-marker')
 
-
       let dataType = dataItem.data_type
       let isInvalid = false;
 
@@ -1349,16 +1345,28 @@ reearth.ui.show(`
 
       // sort features by type
       for (let i = 0; i < geoJsonData.features.length; i++) {
-        if ((geoJsonData.features[i].geometry.type === "Point") || (geoJsonData.features[i].geometry.type === "MultiPoint") || (geoJsonData.features[i].geometry.name === "markers")) {
+        if ((geoJsonData.features[i].geometry.type === "Point") || (geoJsonData.features[i].geometry.type === "MultiPoint")) {
           points.features.push(geoJsonData.features[i]);
         } else if ((geoJsonData.features[i].geometry.type === "LineString") || (geoJsonData.features[i].geometry.type === "MultiLineString")) {
           lines.features.push(geoJsonData.features[i]);
         } else if ((geoJsonData.features[i].geometry.type === "Polygon") || (geoJsonData.features[i].geometry.type === "MultiPolygon")) {
           polygons.features.push(geoJsonData.features[i]);
         }
-      }
+        }
+
+        let type = "Default";
+      if ((geoJsonData.features[0].geometry.type === "Point") || (geoJsonData.features[0].geometry.type === "MultiPoint")) {
+          type = "Point";
+        } else if ((geoJsonData.features[0].geometry.type === "LineString") || (geoJsonData.features[0].geometry.type === "MultiLineString")) {
+          type = "Line";
+        } else if ((geoJsonData.features[0].geometry.type === "Polygon") || (geoJsonData.features[0].geometry.type === "MultiPolygon")) {
+          type = "Polygon";
+        } else if (geoJsonData.features[0].geometry.name === "markers") {
+          type = "Default"
+        }
 
       switch (dataType) {
+
         case 'point':
           isInvalid = false;
           if (points.features.length === 0) {
@@ -1388,7 +1396,9 @@ reearth.ui.show(`
 
             overridePoinProperties(points, layerId, strokeProp, radius, pointFill);
           } else {
-            alert("Please, choose correct Data Type")
+            if(type !== "Default"){
+              alert("Please, choose" + " " + type + " " + "Data Type");
+            }
           }
 
           break
@@ -1426,7 +1436,9 @@ reearth.ui.show(`
             parent.postMessage({ type: "Properties", layerId, geoJson }, "*");
 
           } else {
-            alert("Please, choose correct Data Type")
+            if(type !== "Default"){
+              alert("Please, choose" + " " + type + " " + "Data Type");
+            }
           }
           break
 
@@ -1451,11 +1463,13 @@ reearth.ui.show(`
               });
             }
 
-            let lineProp = ({ "stroke": dataItem.line_color || "yellow", "stroke-width": dataItem.line_width || "1" });
+            let lineProp = ({ "stroke": dataItem.line_color || "#000000", "stroke-width": dataItem.line_width || "1" });
 
             overrideLineProperties(lines, layerId, lineProp);
           } else {
-            alert("Please, choose correct Data Type")
+            if(type !== "Default"){
+              alert("Please, choose" + " " + type + " " + "Data Type");
+            }
           }
           break
 
@@ -1486,13 +1500,15 @@ reearth.ui.show(`
 
             overridePolygonProperties(polygons, layerId, polygonFill, polygonProp);
           } else {
-            alert("Please, choose correct Data Type")
+            if(type !== "Default"){
+              alert("Please, choose" + " " + type + " " + "Data Type");
+            }
           }
 
           break
 
         case 'kml':
-          alert("Please, choose correct Data Type")
+          alert("Please, choose" + " " + type + " " + "Data Type")
           break
       }
 
